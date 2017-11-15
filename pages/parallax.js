@@ -5,7 +5,7 @@ import withStyle from '../hoc/withStyle';
 import TestContainer from '../container/testContainer';
 import Link from 'next/link';
 
-export default pageConnect(withStyle((props) => {
+export default pageConnect((props) => {
     return (
         <div className="parallax-page">
             This is parallax page
@@ -15,4 +15,7 @@ export default pageConnect(withStyle((props) => {
             </Link>
         </div>
     );
-}, [stylesheet]));
+}, {
+    stylesheets: [stylesheet],
+    title: 'Parallax'
+});

@@ -78,6 +78,11 @@ yarn start
             stylesheets: [stylesheet]
         })
         ```
+- `pageConnect` hoc will accept 1 object as agrument. If in that object contain the folling key, it will add to `<Head>`
+    - `stylesheets` is array of stylesheet that was imported.
+    - `title` is string of title in that page
+    - `icon` is string of source for `favicon`
+    - `childrens` is array of JSX (Needed to be labeled with key already).
 
 ---
 

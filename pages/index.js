@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import Router from 'next/router'
 import Head from 'next/head';
+import pageConnect from '../hoc/pageConnect';
 
 const handleClickIndex = () => {
     setTimeout(() => {
@@ -28,7 +29,7 @@ async function test() {
     }
 }
 
-export default (props) => {
+export default pageConnect((props) => {
     return (
         <div>
             <Head>
@@ -45,4 +46,6 @@ export default (props) => {
             <button onClick={handleClick}>Async Test</button>
         </div>
     );
-}
+}, {
+    title: 'Index'
+})
