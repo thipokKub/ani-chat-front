@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import Router from 'next/router'
+import Head from 'next/head';
 
 const handleClickIndex = () => {
     setTimeout(() => {
@@ -30,6 +31,9 @@ async function test() {
 export default (props) => {
     return (
         <div>
+            <Head>
+                <title>Index</title>
+            </Head>
             This is index page
             <br />
             Lol

@@ -36,5 +36,15 @@
   },
   "devDependencies": {
     "now": "^3.1.0"
-  }
+  },
+  "description": "## Gettting start --- just use `npm` or `yarn` ``` npm install ``` or ``` yarn install ```",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thipokKub/nextJS-Boilerplate.git"
+  },
+  "author": "",
+  "bugs": {
+    "url": "https://github.com/thipokKub/nextJS-Boilerplate/issues"
+  },
+  "homepage": "https://github.com/thipokKub/nextJS-Boilerplate#readme"
 }

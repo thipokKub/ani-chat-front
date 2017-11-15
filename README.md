@@ -33,31 +33,53 @@ yarn start
 
 ---
 ## Important Note
-- When including `css` or `scss` into `js` file. Please follow the following steps
+- When including `css` or `scss` into `js` file. Please noted that the imported `css` or `scss` wiil be in `String` format.
+
+- To applied the imported styles, please use `withStyle` higher order component. which located in `/hoc` folder. But `withStyle` cannot wrapped `pageConnect`. Please either applied `withStyle` before using `pageConnect` or adding options in pageConnect.
+- The agrument for `stylesheets` is an array of strings. As the example below write
+    ```jsx
+        [stylesheet]
+    ```
+- It is actually refer to array of stylesheet not just a placeholder. In case there is multiple stylesheets, the agrument will look something like this.
+    ```jsx
+        [stylesheet1, stylesheet2, ...]
+    ```
+- Please follow the following steps.
 
     1. Import files
     ```jsx
     import stylesheet from '<relative path>';
     ```
-    2. Add `<style>` tag into rendered object as following
-    ```jsx
-    <style dangerouslySetInnerHTML={{ __html: stylesheet }} />
-    ```
-    For example
-    ```jsx
-    import React from 'react';
-    import pageConnect from '../hoc/pageConnect';
-    import stylesheet from './style/parallax.scss';
 
-    export default pageConnect((props) => {
-        return (
-            <div>
-                <style dangerouslySetInnerHTML={{ __html: stylesheet }} />
-                ...
-            </div>
-        );
-    })
-    ```
+    2. Applied style
+
+        2.1 Use pageConnect only (This should be used only components in `/pages` folder).
+
+        ```jsx
+        class pageComponent extends Component {
+            ...
+        }
+
+        ...
+
+        export default pageConnect(pageComponent, {
+            stylesheets: [stylesheet]
+        })
+        ```
+
+        2.2 Use `withStyle` with any other HOC.
+
+        ```jsx
+        class someCompoent extends Component {
+            ...
+        }
+
+        ...
+
+        export default pageConnect(autoBind(someComponent), {
+            stylesheets: [stylesheet]
+        })
+        ```
 
 ---
 

@@ -1,12 +1,18 @@
 import React from 'react';
 import pageConnect from '../hoc/pageConnect';
 import stylesheet from './style/parallax.scss';
+import withStyle from '../hoc/withStyle';
+import TestContainer from '../container/testContainer';
+import Link from 'next/link';
 
-export default pageConnect((props) => {
+export default pageConnect(withStyle((props) => {
     return (
         <div className="parallax-page">
-            <style dangerouslySetInnerHTML={{ __html: stylesheet }} />
             This is parallax page
+            <TestContainer />
+            <Link href="/">
+                <a>Click Me!</a>
+            </Link>
         </div>
     );
-})
+}, [stylesheet]));
