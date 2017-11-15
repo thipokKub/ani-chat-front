@@ -9,17 +9,32 @@ import Router from 'next/router'
 import NProgress from 'nprogress'
 import Head from 'next/head';
 import _ from 'lodash';
-import { time_pageDelay } from '../constraint/variables';
+
+import { time_pageDelay,
+    enableNProgress,
+    enableRandomPageDelay,
+    randomPageDelayRatio
+} from '../constraint/variables';
+
+import { randomRatio } from '../function/general';
 
 Router.onRouteChangeStart = (url) => {
-    NProgress.start()
+    if (enableNProgress) NProgress.start()
 }
-Router.onRouteChangeComplete = () => setTimeout(() => {
-    NProgress.done()
-}, time_pageDelay);
-Router.onRouteChangeError = () => setTimeout(() => {
-    NProgress.done()
-}, time_pageDelay);
+Router.onRouteChangeComplete = () => {
+    if (enableNProgress) {
+        setTimeout(() => {
+            NProgress.done()
+        }, enableRandomPageDelay ? randomRatio(time_pageDelay, randomPageDelayRatio) : time_pageDelay);
+    }
+}
+Router.onRouteChangeError = () => {
+    if (enableNProgress) {
+        setTimeout(() => {
+            NProgress.done()
+        }, enableRandomPageDelay ? randomRatio(time_pageDelay, randomPageDelayRatio) : time_pageDelay);
+    }
+}
 
 export default function (ComposedComponent, options) {
     class connecting extends Component {

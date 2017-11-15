@@ -5,7 +5,7 @@ import thunk from 'redux-thunk';
 import { isDebug } from '../constraint/variables';
 import rootReducer from './reducers/index';
 
-const middlewares = [isDebug && logger, thunk].filter(Boolean);
+const middlewares = [thunk, isDebug && logger].filter(Boolean);
 const createStoreWithMiddleware = applyMiddleware(...middlewares)(createStore);
 
 export default function iniitStore() {
