@@ -11,8 +11,6 @@ or
 yarn install
 ```
 
----
-
 Then use the following command to start develop.
 ```
 npm start
@@ -91,38 +89,82 @@ yarn start
     │   └── variables.scss
     ├── container
     │   └── style
+    |       └── ...
     ├── function
     │   ├── general.js
-    │   └── request.js
+    │   └── ...
     ├── hoc
+    │   ├── style
+    │   |   └── ...
+    │   ├── withStyle.js
     │   ├── autoBind.js
     │   ├── pageConnect.js
-    │   ├── requireLogin.js
-    │   ├── requirePrivillege.js
-    │   └── style
+    │   └── ...
     ├── next.config.js
     ├── package.json
     ├── pages
-    │   ├── _document.js
-    │   ├── about.js
-    │   ├── index.js
-    │   ├── parallax.js
     │   └── style
-    │       └── parallax.scss
+    │   |   └── parallax.scss
+    │   ├── _document.js
+    │   ├── parallax.js
+    │   └── ...
     ├── postcss.config.js
     ├── redux
     │   ├── actions
     │   │   ├── index.js
-    │   │   └── test_actions.js
+    │   │   └── ...
     │   ├── reducers
     │   │   ├── index.js
-    │   │   └── test_reducer.js
+    │   │   └── ...
     │   ├── store.js
     │   └── types.js
     ├── static
     │   └── resources
-    │       └── nprogress.css
+    │       └── ...
     └── yarn.lock
 ```
 
-Well, pretty much self-explainatory
+Well, pretty much self-explainatory.
+
+- `component`
+    - This folder will contain all components (self-state). I encourage to use `props` as much as possible. Try not to set inner state to props in `constructor` or `componentWillReceiveProps`. I considered it anti-pattern and very counter-productive.
+- `container`
+    - This foler contain all `smart component` or `container`. Which will bind to the redux store.
+- `function`
+    - This folder contain regularly used user defined function. It is nice to have it all in one place, trust me.
+- `hoc`
+    - This folder conatin predefined Higher-Order-Component (HOC). There are 3 main HOC.
+
+        1. `autoBind`
+            - This HOC will bind every `action creators` and `redux store` to the component. This HOC should use with Component/Container level object only.
+        2. `pageConnect`
+            - This HOC will bind every `action creators` and `redux store` to the page component. This HOC should only be used with page level component only. (As it solved incompatibility of `withStyle` and `withRedux`).
+        3. `withStyle`
+            - This HOC will include `SCSS` or `CSS` as imported from `styledheets` agrument (Must be an `Array` of `stylesheet`) 
+            to header of the page.
+- `pages`
+    - This folder `is` required by `NextJS`. So I'm not going to talk about it.
+- `redux`
+    - This folder contain all relevant file structure for redux. There are 2 files, and 2 sub folders.
+        - `actions`
+            - This folder contain at least 1 file. `index.js` file.
+                - `index.js`
+                    - This file merge all actions in the folder to the same object for the ease in implementing HOC above.
+        - `reducers`
+            - This folder contain at least 1 file. `index.js` file.
+                - `index.js`
+                    - This file merge all redux store in the folder to the same object.
+        - `store.js`
+            - This file defined store and middlewares that applied to it.
+        - `types.js`
+            - This file defined types for all actions in action creators.
+- `static`
+    - This folder contain all resouces. Such as external CSS libraries, Javascript libraries, or Images.
+    - As of `NextJS` document goes, this should be accessed within custom `<Document>` section as linked [here](https://github.com/zeit/next.js/#custom-document).
+- `Other files`
+    - I have preconfig them already. By intensive googling of course. So please don't change the code. Or else you will be having a bad time.
+
+---
+
+Good Luck! 
+
