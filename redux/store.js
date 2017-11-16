@@ -7,7 +7,8 @@ import rootReducer from './reducers/index';
 
 const middlewares = [thunk, isDebug && logger].filter(Boolean);
 const createStoreWithMiddleware = applyMiddleware(...middlewares)(createStore);
+export const store = createStoreWithMiddleware(rootReducer);
 
 export default function iniitStore() {
-    return createStoreWithMiddleware(rootReducer);
+    return store;
 }
