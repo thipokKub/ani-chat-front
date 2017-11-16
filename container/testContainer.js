@@ -2,14 +2,14 @@ import React from 'react';
 import withStyle from '../hoc/withStyle';
 import autoBind from '../hoc/autoBind';
 import withInternalState from '../hoc/withInternalState';
-import normalComponent from '../hoc/normalComponent';
+import wrappedContainer from '../hoc/wrappedContainer';
 import stylesheet from './style/testContainer.scss';
 
 function onAddOne(state) {
     return state.test + 1;
 }
 
-export default normalComponent(autoBind((props) => {
+export default wrappedContainer((props) => {
     return (
         <div
             className="test-container"
@@ -19,14 +19,15 @@ export default normalComponent(autoBind((props) => {
             }}
         >
             Store string: {props.test.String}<br />
-            Internal State string: {props.state.test}
+            Internal State string: {props.state.test > 2 ? t.t : props.state.test}
         </div>
     )
-}), {
+}, {
     initialState: {
         'test': 1
     },
-    onError: (error, info) => console.log(error, info),
-    fallbackJSX: <div>Hello, this is error message</div>,
+    onErrorJSX: (props) => {
+        return <div onClick={() => props.testMessage("Hi")}>Hello, this is error message</div>
+    },
     stylesheets: [stylesheet]
 });

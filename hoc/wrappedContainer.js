@@ -2,13 +2,17 @@ import React, { Component } from 'react';
 import Head from 'next/head';
 import _ from 'lodash';
 
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import rootActions from '../redux/actions/index';
+
 export default function (ComposedComponent, params) {
 
     const initialState = _.get(params, 'initialState');
     const stylesheets = _.get(params, 'stylesheets');
 
-    return class normalComponent extends Component {
-        
+    class wrappedContainer extends Component {
+
         constructor(props) {
             super(props);
             this.state = {
@@ -44,9 +48,9 @@ export default function (ComposedComponent, params) {
         }
 
         render() {
-            const alternative = _.get(params, 'fallbackJSX', <span>{`Sorry, something went wrong :-(`}</span>);
+            const alternative = _.get(params, 'onErrorJSX', () => <span>{`Sorry, something went wrong :-(`}</span>);
             if (this.state.hasError) {
-                return alternative;
+                return alternative(this.props);
             }
 
             if (stylesheets !== null && typeof stylesheets !== "undefined" && stylesheets.constructor === Array) {
@@ -88,5 +92,12 @@ export default function (ComposedComponent, params) {
         }
     }
 
-    return normalComponent;
+    function mapStateToProps(state) {
+        return { ...state };
+    }
+    function mapDispatchToProps(dispatch) {
+        return bindActionCreators({ ...rootActions }, dispatch);
+    }
+
+    return connect(mapStateToProps, mapDispatchToProps)(wrappedContainer);
 }

@@ -84,8 +84,8 @@ yarn start
     - `icon` is string of source for `favicon`
     - `childrens` is array of JSX (Needed to be labeled with key already).
 - `withInternalState` hoc will accept 1 object as its initial state. You can accessed its state with `this.props.state` or `props.state`, depends on the case. To update state, you will use `this.props.onSetState(<PropertyName>, <Value>)`.
-- `withErrorCatch` hoc will accept 1 object as its parameters. There are 2 property that affect this hoc. `onError` callback and `fallbackJSX` jsx object.
-- `normalComponent` hoc is the combined hoc of `withStyle`, `withInternalState`, and `withErrorCatch`. This hoc will accept 1 object as its parameters. The following parameters is consistent with the above parameters. If any one of the following peoperty is omitted, the result will be that that component will lack that certain peoperty. For example if `onError` and `fallbackJSX` is not defined. Then it will acted like `withInternalState` combined with `withErrorCatch` only.
+- `withErrorCatch` hoc will accept 1 object as its parameters. There are 2 property that affect this hoc. `onError` callback and `onErrorJSX` to generate fallbeck jsx object.
+- `wrappedComponent` hoc is the combined hoc of `withStyle`, `withInternalState`, and `withErrorCatch`. This hoc will accept 1 object as its parameters. The following parameters is consistent with the above parameters. If any one of the following peoperty is omitted, the result will be that that component will lack that certain peoperty. For example if `onError` and `fallbackJSX` is not defined. Then it will acted like `withInternalState` combined with `withErrorCatch` only.
 
     Noted: Please noted that `hasError` propery is reserved for internal usage. Please use another property name.
 
@@ -94,9 +94,13 @@ yarn start
     The following is the defnined property.
     - `initialState` property for setting up its internal state.
     - `onError` property is an error callback.
-    - `fallbackJSX` property is an fallback JSX object.
+    - `onErrorJSX` property is a callback to generate fallback JSX object, injected with `props` as an agrument.
     - `stylesheets` is an array of stylesheets.
+- `wrappedContainer` is the same as `wrappedComponent` but also connect the component to redux store. This has the same effect as the following (Just much easier to use).
 
+    ```jsx
+    autoBind(wrappedComponent(..., ...)))
+    ```
 
 ---
 

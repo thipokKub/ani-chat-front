@@ -34,7 +34,7 @@ export default function (ComposedComponent, params) {
         }
 
         render() {
-            const alternative = _.get(params, 'fallbackJSX', <span>{`Sorry, something went wrong :-(`}</span>);
+            const alternative = _.get(params, 'onErrorJSX', () => <span>{`Sorry, something went wrong :-(`}</span>)(this.props);
             if(this.state.hasError) {
                 return alternative;
             }
