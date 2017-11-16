@@ -19,7 +19,7 @@ export default wrappedContainer((props) => {
             }}
         >
             Store string: {props.test.String}<br />
-            Internal State string: {props.state.test > 2 ? t.t : props.state.test}
+            Internal State string: {props.state.test > 2 ? -1 * props.state.test : props.state.test}
         </div>
     )
 }, {
