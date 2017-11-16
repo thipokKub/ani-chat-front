@@ -83,6 +83,20 @@ yarn start
     - `title` is string of title in that page
     - `icon` is string of source for `favicon`
     - `childrens` is array of JSX (Needed to be labeled with key already).
+- `withInternalState` hoc will accept 1 object as its initial state. You can accessed its state with `this.props.state` or `props.state`, depends on the case. To update state, you will use `this.props.onSetState(<PropertyName>, <Value>)`.
+- `withErrorCatch` hoc will accept 1 object as its parameters. There are 2 property that affect this hoc. `onError` callback and `fallbackJSX` jsx object.
+- `normalComponent` hoc is the combined hoc of `withStyle`, `withInternalState`, and `withErrorCatch`. This hoc will accept 1 object as its parameters. The following parameters is consistent with the above parameters. If any one of the following peoperty is omitted, the result will be that that component will lack that certain peoperty. For example if `onError` and `fallbackJSX` is not defined. Then it will acted like `withInternalState` combined with `withErrorCatch` only.
+
+    Noted: Please noted that `hasError` propery is reserved for internal usage. Please use another property name.
+
+    Noted 2: If you want to forced an error to happen, you can actually set `hasError` property with `onSetState`. And if you do that, I want to ask you why? :-P
+
+    The following is the defnined property.
+    - `initialState` property for setting up its internal state.
+    - `onError` property is an error callback.
+    - `fallbackJSX` property is an fallback JSX object.
+    - `stylesheets` is an array of stylesheets.
+
 
 ---
 

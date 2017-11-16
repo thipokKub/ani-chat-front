@@ -1,7 +1,6 @@
 import React from 'react';
 import pageConnect from '../hoc/pageConnect';
 import stylesheet from './style/parallax.scss';
-import withStyle from '../hoc/withStyle';
 import TestContainer from '../container/testContainer';
 import Link from 'next/link';
 
