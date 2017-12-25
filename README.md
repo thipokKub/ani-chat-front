@@ -115,17 +115,17 @@ npm start
     ├── hoc
     │   ├── style
     │   |   └── ...
+    │   ├── enhancedComponent.js
+    │   ├── withErrorCatch.js
     │   ├── withStyle.js
-    │   ├── autoBind.js
-    │   ├── pageConnect.js
     │   └── ...
     ├── next.config.js
     ├── package.json
     ├── pages
     │   └── style
-    │   |   └── parallax.scss
+    │   |   └── index.scss
     │   ├── _document.js
-    │   ├── parallax.js
+    │   ├── index.js
     │   └── ...
     ├── postcss.config.js
     ├── redux
