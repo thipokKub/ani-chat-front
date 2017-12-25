@@ -1,13 +1,15 @@
-import React from 'react';
+import React, { Component } from 'react';
 import Link from 'next/link';
 import Router from 'next/router'
 import Head from 'next/head';
-import pageConnect from '../hoc/pageConnect';
+import enhancedComponent from '../hoc/enhancedComponent';
+import stylesheet from './style/index.scss';
+import { Button } from '../component';
 
 const handleClickIndex = () => {
     setTimeout(() => {
         Router.push({
-            pathname: '/about'
+            pathname: '/test'
         });
     }, 500);
 }
@@ -29,23 +31,36 @@ async function test() {
     }
 }
 
-export default pageConnect((props) => {
-    return (
-        <div>
-            <Head>
-                <title>Index</title>
-            </Head>
-            This is index page
-            <br />
-            Lol
-            <br />
-            <Link href="/about">
-                <a>Click Me!</a>
-            </Link>
-            <button onClick={handleClickIndex}>Delay Redirect</button>
-            <button onClick={handleClick}>Async Test</button>
-        </div>
-    );
-}, {
-    title: 'Index'
+class Index extends Component {
+    render() {
+        const props = this.porps;
+
+        return (
+            <div className="index-page">
+                This is index page
+                <br />
+                Lol
+                <br />
+                <Link href="/test">
+                    <a>Go to test!</a>
+                </Link>
+                <Button
+                    outline
+                    onClick={handleClickIndex}
+                >
+                    Delay Redirect
+                </Button>
+                <button onClick={handleClick}>Async Test</button>
+            </div>
+        );
+    }
+}
+
+export default enhancedComponent(Index, {
+    enableRedux: true,
+    headOption: [{
+        tag: 'title',
+        content: 'index page'
+    }],
+    styleUrls: [stylesheet]
 })

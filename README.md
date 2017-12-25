@@ -2,22 +2,14 @@
 
 ## Gettting start
 ---
-just use `npm` or `yarn`
+Use `npm` to install all the dependencies with command below.
 ```
 npm install
-```
-or
-```
-yarn install
 ```
 
 Then use the following command to start develop.
 ```
 npm start
-```
-or
-```
-yarn start
 ```
 ---
 
@@ -33,7 +25,7 @@ yarn start
 ## Important Note
 - When including `css` or `scss` into `js` file. Please noted that the imported `css` or `scss` wiil be in `String` format.
 
-- To applied the imported styles, please use `withStyle` higher order component. which located in `/hoc` folder. But `withStyle` cannot wrapped `pageConnect`. Please either applied `withStyle` before using `pageConnect` or adding options in pageConnect.
+- To applied the imported styles, please use `withStyle` higher order component or `enhancedComponent`. which located in `/hoc` folder. If you want to connect to redux store please use `enhancedComponent`.
 - The agrument for `stylesheets` is an array of strings. As the example below write
     ```jsx
         [stylesheet]
@@ -51,55 +43,59 @@ yarn start
 
     2. Applied style
 
-        2.1 Use pageConnect only (This should be used only components in `/pages` folder).
-
-        ```jsx
-        class pageComponent extends Component {
-            ...
-        }
-
-        ...
-
-        export default pageConnect(pageComponent, {
-            stylesheets: [stylesheet]
-        })
-        ```
+        2.1 Use `enhancedComponent`. [Detailed is in section below]
 
         2.2 Use `withStyle` with any other HOC.
 
         ```jsx
+        import withStyle from '../hoc/withStyle'
+
         class someCompoent extends Component {
             ...
         }
 
         ...
 
-        export default pageConnect(autoBind(someComponent), {
+        export default withStyle(someComponent, {
             stylesheets: [stylesheet]
         })
         ```
-- `pageConnect` hoc will accept 1 object as agrument. If in that object contain the folling key, it will add to `<Head>`
-    - `stylesheets` is array of stylesheet that was imported.
-    - `title` is string of title in that page
-    - `icon` is string of source for `favicon`
-    - `childrens` is array of JSX (Needed to be labeled with key already).
-- `withInternalState` hoc will accept 1 object as its initial state. You can accessed its state with `this.props.state` or `props.state`, depends on the case. To update state, you will use `this.props.onSetState(<PropertyName>, <Value>)`.
 - `withErrorCatch` hoc will accept 1 object as its parameters. There are 2 property that affect this hoc. `onError` callback and `onErrorJSX` to generate fallbeck jsx object.
-- `wrappedComponent` hoc is the combined hoc of `withStyle`, `withInternalState`, and `withErrorCatch`. This hoc will accept 1 object as its parameters. The following parameters is consistent with the above parameters. If any one of the following peoperty is omitted, the result will be that that component will lack that certain peoperty. For example if `onError` and `fallbackJSX` is not defined. Then it will acted like `withInternalState` combined with `withErrorCatch` only.
+- `enhancedComponent` hoc will accept 1 object as its parameter. This parameter is `option` parameter which can contain the following property.
+    - `enableRedux` - `[Boolean]` - Enable or disable connecting to redux. This is enabled by default.
+    - `reduxOption` - `[Object]` - Option for redux usage. If no `reduxOption` is present when `enableRedux` is `true`. Then it will connect all redux store and actions.
+        - `stateName` - `[Array of String]` - Name of selected store.
+        - `dispatchName` - `[Array of String]` - Name of selected actions.
+    - `styleUrls` - `[Array of Stylesheet(s)]` - Array of the imported Stylesheet(s). It can be `css` or `scss` file.
+    - `headOption` - `[Array of Object]` - Array of `head` component to be inserted.
+        - `tag` - `[String]` - Name of tag
+        - `content` - `[Any]` - Content or child of tag
+        - `option` - `[Object]` - property to be added to tag
 
-    Noted: Please noted that `hasError` propery is reserved for internal usage. Please use another property name.
-
-    Noted 2: If you want to forced an error to happen, you can actually set `hasError` property with `onSetState`. And if you do that, I want to ask you why? :-P
-
-    The following is the defnined property.
-    - `initialState` property for setting up its internal state.
-    - `onError` property is an error callback.
-    - `onErrorJSX` property is a callback to generate fallback JSX object, injected with `props` as an agrument.
-    - `stylesheets` is an array of stylesheets.
-- `wrappedContainer` is the same as `wrappedComponent` but also connect the component to redux store. This has the same effect as the following (Just much easier to use).
-
+    Example usage
     ```jsx
-    autoBind(wrappedComponent(..., ...)))
+    import enhancedComponent from '../hoc/enhancedComponent'
+    import stylesheetA from '<some place>'
+    import stylesheetB from '<some other place>'
+
+    ...
+
+    class ABC extends Component {
+        ...
+    }
+
+    export default enhancedComponent(ABC, {
+        enableRedux: true,
+        headOption: [{
+            tag: 'title',
+            content: 'index page'
+        }],
+        reduxOption: {
+            stateName: ["someState"],
+            dispatchName: ["someAction", "someOtherAction"]
+        },
+        styleUrls: [stylesheetA, styleSheetB]
+    })
     ```
 
 ---
@@ -156,15 +152,7 @@ Well, pretty much self-explainatory.
 - `function`
     - This folder contain regularly used user defined function. It is nice to have it all in one place, trust me.
 - `hoc`
-    - This folder conatin predefined Higher-Order-Component (HOC). There are 3 main HOC.
-
-        1. `autoBind`
-            - This HOC will bind every `action creators` and `redux store` to the component. This HOC should use with Component/Container level object only.
-        2. `pageConnect`
-            - This HOC will bind every `action creators` and `redux store` to the page component. This HOC should only be used with page level component only. (As it solved incompatibility of `withStyle` and `withRedux`).
-        3. `withStyle`
-            - This HOC will include `SCSS` or `CSS` as imported from `styledheets` agrument (Must be an `Array` of `stylesheet`) 
-            to header of the page.
+    - This folder conatin predefined Higher-Order-Component (HOC).
 - `pages`
     - This folder `is` required by `NextJS`. So I'm not going to talk about it.
 - `redux`
