@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
+import 'react-perfect-scrollbar/dist/css/styles.css';
+import PerfectScrollbar from 'react-perfect-scrollbar'
 
 const MainSectionStyle = styled.section`
 background-color: #F1F1F177;
@@ -38,13 +40,16 @@ class MainSection extends Component {
     render() {
         const { bgColor, color, offsetHeight, height } = this.props;
         return (
-            <MainSectionStyle bgColor={bgColor} color={color} ref={(me) => this._me = me} style={{
-                width: `${this.state.parentWidth}px`,
-                marginTop: `${offsetHeight}`,
-                height: `${height}`
-            }}>
-                {this.props.children}
-            </MainSectionStyle>
+            <PerfectScrollbar>
+                <MainSectionStyle bgColor={bgColor} color={color} ref={(me) => this._me = me} style={{
+                    width: `${this.state.parentWidth}px`,
+                    marginTop: `${offsetHeight}`,
+                    height: `${height}`
+                }}>
+                    
+                        {this.props.children}
+                </MainSectionStyle>
+            </PerfectScrollbar>
         );
     }
 }

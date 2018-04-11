@@ -8,6 +8,23 @@ input, textarea, select, button {
   font-family: 'Kanit' !important;
 }
 
+.ps-scrollbar-y-rail {
+  display: none !important;
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+::-webkit-scrollbar-button {
+  display: none;
+}
+
+* {
+  -ms-overflow-style: -ms-autohiding-scrollbar;
+  -ms-overflow-style: none;
+}
+
 .avatar-container {
   background-color: rgba(255, 255, 255, 0.8);
   display: flex;
