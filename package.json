@@ -36,9 +36,12 @@
     "styled-components": "^2.2.3"
   },
   "scripts": {
-    "start": "next",
+    "dev": "next",
+    "start": "next start -p $PORT",
     "build": "next build",
-    "deploy": "next start"
+    "deploy": "next start",
+    "postinstall": "next build",
+    "runtest": "next"
   },
   "description": "## Gettting start --- just use `npm` or `yarn` ``` npm install ``` or ``` yarn install ```",
   "repository": {
