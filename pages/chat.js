@@ -80,7 +80,21 @@ class Index extends Component {
             navHeight: -1,
             isNoUserFound: false,
             redirectedDot: 0,
-            redirectedInterval: -1
+            redirectedInterval: -1,
+            selectedChatIndex: -1
+        }
+    }
+    onChangeSelectedIndex = (idx) => {
+        return () => {
+            if (this.state.selectedChatIndex === idx) {
+                this.setState({
+                    selectedChatIndex: -1
+                })
+            } else {
+                this.setState({
+                    selectedChatIndex: idx
+                })
+            }
         }
     }
     componentDidMount() {
@@ -166,7 +180,7 @@ class Index extends Component {
             errorMapId: this.props.errorMapId
         }
 
-        const { isNoUserFound, redirectedDot } = this.state;
+        const { isNoUserFound, redirectedDot, selectedChatIndex } = this.state;
 
         if(isNoUserFound) {
             return (
@@ -189,16 +203,21 @@ class Index extends Component {
             sharedStore.groupList = this.props.map.ChatStore.groupList.data
         }
 
+        let TitleName = 'Chat';
+        if (selectedChatIndex !== -1) {
+            TitleName = sharedStore.groupList[selectedChatIndex].name
+        }
+
         return (
             <TransparentSection>
                 <section className="content">
                     <IndexStyled>
                         <section className="sideNav">
                             <AppBar
-                                text={'Group List'}
+                                text={'Chat List'}
                                 icon={'fa fa-users'}
                                 bgColor={'#FFFFFFCC'}
-                                color={'#777'}
+                                color={'#333'}
                                 ref={(nav) => this._nav = nav}
                                 isRendered={!isNoUserFound}
                                 sharedStore={sharedStore}
@@ -214,12 +233,13 @@ class Index extends Component {
                                 <GroupList
                                     isRendered={!isNoUserFound}
                                     sharedStore={sharedStore}
+                                    onSelectedIndex={this.onChangeSelectedIndex}
                                 />
                             </MainSection>
                         </section>
                         <section className="MainApp">
                             <AppBar
-                                text={'Chat'}
+                                text={TitleName}
                                 icon={'fa fa-comments-o'}
                                 isMain={true}
                                 bgColor={'#FFFFFFBB'}
@@ -238,6 +258,7 @@ class Index extends Component {
                                 <ChatRoom
                                     isRendered={!isNoUserFound}
                                     sharedStore={sharedStore}
+                                    selectedIndex={this.state.selectedChatIndex}
                                 />
                             </MainSection>
                         </section>

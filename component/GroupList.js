@@ -99,11 +99,17 @@ class GroupList extends Component {
                 username = this.props.sharedStore.username.data;
             }
             if (this.props.sharedStore.groupList && this.props.sharedStore.groupList.constructor === Array) {
-                this.props.sharedStore.groupList.forEach((item) => {
+                this.props.sharedStore.groupList.forEach((item, index) => {
                     if (item.members.indexOf(username) !== -1) {
-                        JoinedGroup.push(item)
+                        JoinedGroup.push({
+                            item: item,
+                            idx: index
+                        })
                     } else {
-                        UnjoinedGroup.push(item)
+                        UnjoinedGroup.push({
+                            item: item,
+                            idx: index
+                        })
                     }
                 })
             }
@@ -111,14 +117,21 @@ class GroupList extends Component {
         }
         return (
             <GroupListStyle width={this.state.width}>
+                {
+                    // <section className="search-bar">
+                    //     <input placeholder="Group Name" />
+                    //     <i className="close icon"></i>
+                    // </section>
+                }
                 <section>
                     <div className="header">Already Member</div>
                     <section>
                         {JoinedGroup.map((it, idx) => {
                             return (
                                 <GroupItem
-                                    item={it}
+                                    item={it.item}
                                     key={idx}
+                                    onSelect={this.props.onSelectedIndex(it.idx)}
                                 />
                             )
                         })}
@@ -130,8 +143,9 @@ class GroupList extends Component {
                         {UnjoinedGroup.map((it, idx) => {
                             return (
                                 <GroupItem
-                                    item={it}
+                                    item={it.item}
                                     key={idx}
+                                    onSelect={this.props.onSelectedIndex(it.idx)}
                                 />
                             )
                         })}

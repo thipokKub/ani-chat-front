@@ -10,15 +10,16 @@ box-sizing: border-box;
 ${(props) => { return props.bgColor && `background-color: ${props.bgColor};` }}
 ${(props) => { return props.color && `color: ${props.color};` }}
 position: fixed;
-overflow: hidden;
+overflow-y: scroll;
+/* overflow: hidden; */
 
-.scroll-content {
+/* .scroll-content {
     position: relative;
     width: calc(100% + 12px);
     overflow-y: scroll;
     overflow-x: hidden;
     height: 100%;
-}
+} */
 `;
 
 class MainSection extends Component {

@@ -132,6 +132,47 @@ overflow-x: hidden;
     }
 }
 
+.center {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    height: calc(100vh - 80px);
+    color: #FFF;
+    font-size: 1.5rem;
+
+    span {
+        width: 80%;
+        text-align: center;
+    }
+
+    img {
+        width: 15vw;
+        min-width: 150px;
+    }
+
+    button {
+        width: 70px;
+        height: 30px;
+        outline: none;
+        background: #F35429;
+        border: none;
+        color: #FFF;
+        font-size: 0.8rem;
+        margin: 0px 5px;
+
+        &:hover, &:active {
+            color: #F35429;
+            background: #FFF;
+        }
+
+        &:active {
+            filter: brightness(0.9);
+        }
+    }
+}
+
 input, textarea {
     width: 100%;
     box-sizing: border-box;
@@ -159,6 +200,18 @@ class ChatRoom extends Component {
             width: -1
         }
     }
+
+    onSubmit = (e) => {
+        e.preventDefault();
+        const Message = this._Message.value;
+        this._Message.value = ''
+        return false;
+    }
+
+    onRejectRequest = () => {
+        alert("SAD")
+    }
+
     componentDidMount() {
         this._isMounted = true
         setTimeout(() => {
@@ -178,6 +231,33 @@ class ChatRoom extends Component {
     }
 
     render() {
+        const { selectedIndex } = this.props;
+        const Default = (
+            <ChatRoomStyle width={this.state.width}>
+                <div className="center">
+                    <img src="/static/resources/logo/light.png" />
+                    <span>No Chat Selected</span>
+                </div>
+            </ChatRoomStyle>
+        );
+
+        const NotMember = (
+            <ChatRoomStyle width={this.state.width}>
+                <div className="center">
+                    <img src="/static/resources/logo/light.png" />
+                    <span>You are not a member. Do you want to join?</span>
+                    <div>
+                        <button>Yes</button>
+                        <button onClick={this.onRejectRequest}>No</button>
+                    </div>
+                </div>
+            </ChatRoomStyle>
+        )
+
+        if(selectedIndex === -1) {
+            return Math.floor(Math.random() * 1000) < 500 ? Default : NotMember;
+        }
+
         return (
             <ChatRoomStyle width={this.state.width}>
                 <div className="chat-list">
@@ -322,10 +402,13 @@ class ChatRoom extends Component {
                         </div>
                     </div>
                 </div>
-                <div className="bottom-chat">
-                    <input placeholder="Message" />
-                    <button><i className="fa fa-paper-plane" /></button>
-                </div>
+                <form
+                    className="bottom-chat"
+                    onSubmit={this.onSubmit}
+                >
+                    <input placeholder="Message" ref={(me) => this._Message = me} />
+                    <button type="submit"><i className="fa fa-paper-plane" /></button>
+                </form>
             </ChatRoomStyle>
         );
     }

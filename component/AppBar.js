@@ -25,6 +25,7 @@ i {
 h1 {
     margin: 0px;
     padding: 0px;
+    font-size: 1rem;
 }
 
 .right {
