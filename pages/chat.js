@@ -209,6 +209,7 @@ class Index extends Component {
                                 bgColor={'#FFFFFF33'}
                                 isRendered={!isNoUserFound}
                                 sharedStore={sharedStore}
+                                zIndex={900}
                             >
                                 <GroupList
                                     isRendered={!isNoUserFound}
@@ -232,6 +233,7 @@ class Index extends Component {
                                 bgColor={'#FFFFFF40'}
                                 isRendered={!isNoUserFound}
                                 sharedStore={sharedStore}
+                                zIndex={800}
                             >
                                 <ChatRoom
                                     isRendered={!isNoUserFound}

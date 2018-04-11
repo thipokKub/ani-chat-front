@@ -3,7 +3,6 @@ import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
 import 'react-perfect-scrollbar/dist/css/styles.css';
-import PerfectScrollbar from 'react-perfect-scrollbar'
 
 const MainSectionStyle = styled.section`
 background-color: #F1F1F177;
@@ -11,7 +10,15 @@ box-sizing: border-box;
 ${(props) => { return props.bgColor && `background-color: ${props.bgColor};` }}
 ${(props) => { return props.color && `color: ${props.color};` }}
 position: fixed;
-overflow-y: scroll;
+overflow: hidden;
+
+.scroll-content {
+    position: relative;
+    width: calc(100% + 12px);
+    overflow-y: scroll;
+    overflow-x: hidden;
+    height: 100%;
+}
 `;
 
 class MainSection extends Component {
@@ -38,18 +45,18 @@ class MainSection extends Component {
     }
 
     render() {
-        const { bgColor, color, offsetHeight, height } = this.props;
+        const { bgColor, color, offsetHeight, height, zIndex } = this.props;
         return (
-            <PerfectScrollbar>
-                <MainSectionStyle bgColor={bgColor} color={color} ref={(me) => this._me = me} style={{
-                    width: `${this.state.parentWidth}px`,
-                    marginTop: `${offsetHeight}`,
-                    height: `${height}`
-                }}>
-                    
-                        {this.props.children}
-                </MainSectionStyle>
-            </PerfectScrollbar>
+            <MainSectionStyle bgColor={bgColor} color={color} ref={(me) => this._me = me} style={{
+                width: `${this.state.parentWidth}px`,
+                marginTop: `${offsetHeight}`,
+                height: `${height}`,
+                zIndex: `${zIndex}`
+            }}>
+                <section className="scroll-content">
+                    {this.props.children}
+                </section>
+            </MainSectionStyle>
         );
     }
 }

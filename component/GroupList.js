@@ -5,7 +5,7 @@ import ReactDOM from 'react-dom';
 
 const GroupListStyle = styled.section`
 box-sizing: border-box;
-padding-top: 40px;
+/* padding-top: 40px; */
 
 .header {
     background-color: #FFFFFF70;
@@ -111,10 +111,6 @@ class GroupList extends Component {
         }
         return (
             <GroupListStyle width={this.state.width}>
-                <section className="search-bar">
-                    <input placeholder="Group Name" />
-                    <i className="close icon"></i>
-                </section>
                 <section>
                     <div className="header">Already Member</div>
                     <section>

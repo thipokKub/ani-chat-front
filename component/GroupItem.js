@@ -9,6 +9,9 @@ align-items: center;
 box-sizing: border-box;
 padding: 10px 20px;
 background-color: #FFFFFF45;
+position: relative;
+width: calc(100% - 5px);
+left: -5px;
 
 &:hover {
     filter: brightness(0.9);

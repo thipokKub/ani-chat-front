@@ -155,7 +155,7 @@ input:not([type="checkbox"]) {
 .avatar-select-container {
     overflow-x: scroll;
     overflow-y: hidden;
-    height: calc(2*10px + 100px);
+    height: calc(2*10px + 100px + 10px);
 }
 
 ul.avatar-select {
