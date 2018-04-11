@@ -1,0 +1,47 @@
+@import url('https://fonts.googleapis.com/css?family=Kanit');
+
+body {
+    margin: 0px;
+    font-family: 'Kanit' !important;
+}
+
+input, textarea, select, button {
+    font-family: 'Kanit' !important;
+}
+
+.avatar-container {
+    background-color: rgba(255, 255, 255, 0.8);
+    display: flex;
+    border-radius: 50%;
+    width: 150px;
+    height: 150px;
+    overflow: hidden;
+    p {
+        width: 100%;
+        padding: 0;
+        margin: 0;
+        img {
+            width: 100%;
+            transform: scale(0.75);
+        }
+    }
+}
+
+.btn {
+    box-sizing: border-box;
+    height: 40px;
+    border-radius: 20px;
+    border: none;
+    font-size: 0.9rem;
+    box-shadow: 0px 3px 20px rgba(0, 0, 0, 0.1);
+
+    &:hover {
+        filter: brightness(1.3);
+        box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    &:active {
+        filter: brightness(0.9);
+        box-shadow: none;
+    }
+}

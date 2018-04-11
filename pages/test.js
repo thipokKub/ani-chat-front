@@ -44,9 +44,9 @@ export default enhancedComponent((props) => {
         </div>
     );
 }, {
-        enableRedux: true,
-        headOption: [{
-            tag: 'title',
-            content: 'test page'
-        }]
-    })
+    enableRedux: true,
+    headOption: [{
+        tag: 'title',
+        content: 'test page'
+    }]
+})

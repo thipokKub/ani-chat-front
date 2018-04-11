@@ -1,4 +1,10 @@
 @import "../../constraint/variables.scss";
+@import url('https://fonts.googleapis.com/css?family=Kanit');
+
+body {
+    margin: 0px;
+    font-family: Kanit;
+}
 
 .index-page {
     background-color: $default-background;
