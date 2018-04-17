@@ -7,6 +7,7 @@ import stylesheet from './style/index.scss';
 import { Card, AppBar, MainSection, GroupList, ChatRoom } from '../component';
 import styled from 'styled-components';
 import ReactDOM from 'react-dom';
+import io from 'socket.io-client';
 
 const styles = {
     root: {
@@ -85,6 +86,14 @@ class Index extends Component {
         }
     }
     onChangeSelectedIndex = (idx) => {
+        var socket = io("http://localhost:3001");
+        const packet = {
+            userId: this.props.map.UserStat.username,
+            groupId: "5ad5cabd39686d49b8a2331b"
+        }
+        socket.emit('connectGroup',packet ,function(result) {
+            console.log(result);
+        })
         return () => {
             if (this.state.selectedChatIndex === idx) {
                 this.setState({
@@ -196,7 +205,8 @@ class Index extends Component {
         let sharedStore = {
             groupList: [],
             username: this.props.map.UserStat ? this.props.map.UserStat.username : "",
-            password: this.props.map.UserStat ? this.props.map.UserStat.password : ""
+            password: this.props.map.UserStat ? this.props.map.UserStat.password : "",
+            userId: this.props.map.UserStat ? this.props.map.UserStat.userId : ""
         }
 
         if(this.props.map.ChatStore) {

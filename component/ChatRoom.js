@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import styled from 'styled-components';
 import ReactDOM from 'react-dom';
 import AutoSizeTextArea from './AutoTextArea';
-
+import axios from 'axios';
 const bottomChatHeight = 50;
 
 const ChatRoomStyle = styled.div`
@@ -212,6 +212,19 @@ class ChatRoom extends Component {
         alert("SAD")
     }
 
+    onJoinRequest = async () => {
+        console.log(this.props.sharedStore)
+        try{
+            const response = await axios.post('http://localhost:3001/chat/join',{
+                groupId:"5ad5cabd39686d49b8a2331b",
+                userId: this.props.sharedStore.userId.data
+            });
+            console.log(response);
+        }catch (error) {
+            console.error(error);
+        }
+    }
+
     componentDidMount() {
         this._isMounted = true
         setTimeout(() => {
@@ -247,7 +260,7 @@ class ChatRoom extends Component {
                     <img src="/static/resources/logo/light.png" />
                     <span>You are not a member. Do you want to join?</span>
                     <div>
-                        <button>Yes</button>
+                        <button onClick={this.onJoinRequest}>Yes</button>
                         <button onClick={this.onRejectRequest}>No</button>
                     </div>
                 </div>
@@ -257,6 +270,7 @@ class ChatRoom extends Component {
         if(selectedIndex === -1) {
             return Math.floor(Math.random() * 1000) < 500 ? Default : NotMember;
         }
+
 
         return (
             <ChatRoomStyle width={this.state.width}>

@@ -1,4 +1,4 @@
-export const isDebug = false;
+export const isDebug = true;
 
 /* NProgress Loader */
 export const enableNProgress = true;
