@@ -115,7 +115,7 @@ class GroupList extends Component {
             }
             if (this.props.sharedStore.groupList && this.props.sharedStore.groupList.constructor === Array) {
                 this.props.sharedStore.groupList.forEach((item, index) => {
-                    if (item.members.indexOf(username) !== -1) {
+                    if (item.ismember) {
                         JoinedGroup.push({
                             item: item,
                             idx: index

@@ -40,6 +40,29 @@ export default function (ComposedComponent, option) {
 
     //Validate option
     const isEnableRedux = _.get(option, 'enableRedux', true)
+    const { callbackStart, callbackDone, callbackError } = option;
+    if(typeof callbackStart === "function") {
+        Router.onRouteChangeStart = (url) => {
+            if (enableNProgress) NProgress.start()
+            callbackStart();
+        }
+    }
+    if (typeof callbackDone === "function") {
+        if (enableNProgress) {
+            setTimeout(() => {
+                NProgress.done()
+            }, enableRandomPageDelay ? randomRatio(time_pageDelay, randomPageDelayRatio) : time_pageDelay);
+        }
+        callbackDone();
+    }
+    if (typeof callbackError === "function") {
+        if (enableNProgress) {
+            setTimeout(() => {
+                NProgress.done()
+            }, enableRandomPageDelay ? randomRatio(time_pageDelay, randomPageDelayRatio) : time_pageDelay);
+        }
+        callbackError();
+    }
 
     const optionReduxState = _.get(option, 'reduxOption.stateName')
     let optionReduxStateFlag = false

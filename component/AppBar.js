@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
 import Router from 'next/router'
 import enhancedComponent from '../hoc/enhancedComponent';
+import axios from 'axios';
 
 const AppBarStyle = styled.section`
 display: flex;
@@ -108,10 +109,35 @@ class AppBar extends Component {
         this._isMounted = false
     }
 
+    onLeaveGroup = async () => {
+        try {
+            const { url, userId } = this.props.sharedStore;
+            await axios.post(`${url}/chat/leave`, {
+                groupId: _.get(this.props, 'selectedChat.id', ''),
+                userId: userId.data
+            });
+            const lastMsg = _.get(this.props.oProps, 'map.LastMsg.a.data', null);
+
+            let res = await axios.post(`${url}/notify`, {
+                userId: userId,
+                groupId: _.get(this.props, 'selectedChat.id', ''),
+                lastMsg: lastMsg
+            })
+            console.log(res);
+
+            this.props.onFetchChatList();
+        } catch (e) {
+            console.error(e)
+        }
+    }
+
     onLogout = () => {
         if(window.confirm("Are you sure?")) {
             this.props.propsFunc.updateMapId("UserStat", "username", "")
             this.props.propsFunc.updateMapId("UserStat", "password", "")
+            this.props.propsFunc.updateMapId("ChatStore", "groupList", {
+                data: null
+            })
     
             setTimeout(() => {
                 Router.push({
@@ -136,6 +162,16 @@ class AppBar extends Component {
                                 // <button title="Edit Profile">
                                 //     <i className="fa fa-user" />
                                 // </button>
+                            }
+                            {
+                                (this.props.selectedChat !== null) && (
+                                    <button
+                                        onClick={this.onLeaveGroup}
+                                        title="Leave group"
+                                    >
+                                        <i className="fa fa-times" />
+                                    </button>
+                                )
                             }
                             <button
                                 onClick={this.onLogout}

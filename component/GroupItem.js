@@ -208,8 +208,8 @@ const GroupItem = (props) => {
         );
     }
     
-    const innerColor = colorList[translateColorItem(item._id, false)]
-    const outerColor = colorList[translateColorItem(item._id, true)]
+    const innerColor = colorList[translateColorItem(item.id, false)]
+    const outerColor = colorList[translateColorItem(item.id, true)]
     const isDarkImg = isDark(innerColor, outerColor);
 
     return (
@@ -226,7 +226,7 @@ const GroupItem = (props) => {
             <div>
                 <h2>{item.name}</h2>
                 <div>
-                    <span>Members {item.members.length}</span>
+                    <span>Members {item.n_member}</span>
                 </div>
                 {
                     // <div data-role="notification">

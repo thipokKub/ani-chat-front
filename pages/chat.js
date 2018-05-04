@@ -9,6 +9,7 @@ import styled from 'styled-components';
 import ReactDOM from 'react-dom';
 import _ from 'lodash';
 import io from 'socket.io-client';
+import axios from 'axios';
 
 const styles = {
     root: {
@@ -75,6 +76,8 @@ section.background {
 }
 `;
 
+let callbackRedirect = null;
+
 class Index extends Component {
     constructor(props) {
         super(props);
@@ -84,18 +87,26 @@ class Index extends Component {
             redirectedDot: 0,
             redirectedInterval: -1,
             selectedChatIndex: -1,
-            isCreating: false
+            isCreating: false,
+            socket: io("http://localhost:3001")
+        }
+        callbackRedirect = () => {
+            setTimeout(() => {
+                if (this._isMounted) {
+                    this.onInit();
+                }
+            }, 50);
         }
     }
     onChangeSelectedIndex = (idx) => {
-        var socket = io("http://localhost:3001");
-        const packet = {
-            userId: this.props.map.UserStat.username,
-            groupId: "5ad5cabd39686d49b8a2331b"
-        }
-        socket.emit('connectGroup',packet ,function(result) {
-            console.log(result);
-        })
+        // var socket = io("http://localhost:3001");
+        // const packet = {
+        //     userId: this.props.map.UserStat.username,
+        //     groupId: "5ad5cabd39686d49b8a2331b"
+        // }
+        // socket.emit('connectGroup',packet ,function(result) {
+        //     console.log(result);
+        // })
         return () => {
             if (this.state.selectedChatIndex === idx) {
                 this.setState({
@@ -109,13 +120,34 @@ class Index extends Component {
             }
         }
     }
-    componentDidMount() {
-        this._isMounted = true
-        if(!this.props.map.UserStat
+    componentDidUpdate(prevProps, prevState) {
+        if(typeof _.get(this.props, 'map.ChatStore.groupList.data', null) === "undefined" ||
+            _.get(this.props, 'map.ChatStore.groupList.data', null) === null
+        ) {
+            this.onInit();
+        }
+    }
+    onFetchChatList = () => {
+        setTimeout(async () => {
+            try {
+                const { userId } = this.props.map.UserStat;
+                const { location } = this.props.map.Page;
+                let response = await axios.get(`${location.data}/chat/all?id=${userId.data}`);
+                response = response.data;
+                this.props.updateMapId("ChatStore", "groupList", {
+                    data: response
+                });
+            } catch (e) {
+                console.error(e);
+            }
+        }, 0);
+    }
+    onInit = () => {
+        if (!this.props.map.UserStat
             || !this.props.map.UserStat.username
             || !this.props.map.UserStat.password
-            || this.props.map.UserStat.username.data.length === 0
-            || this.props.map.UserStat.password.data.length === 0
+            || _.get(this.props, 'map.UserStat.username.data', '').length === 0
+            || _.get(this.props, 'map.UserStat.password.data', '').length === 0
         ) {
             setTimeout(() => {
                 clearInterval(this.state.redirectedInterval)
@@ -130,13 +162,13 @@ class Index extends Component {
                 redirectedDot: 0,
                 redirectedInterval: setInterval(() => {
                     _this.setState({
-                        redirectedDot: (_this.state.redirectedDot + 1)%3
+                        redirectedDot: (_this.state.redirectedDot + 1) % 3
                     })
                 }, 300)
             })
         } else {
             setTimeout(() => {
-                if(this._isMounted) {
+                if (this._isMounted) {
                     this.setState({
                         navHeight: ReactDOM.findDOMNode(this._nav).offsetHeight
                     })
@@ -148,30 +180,14 @@ class Index extends Component {
                             })
                         }
                     })
-                    if (!this.props.map["ChatStore"]) {
-                        this.props.initMapId("ChatStore", "groupList")
-                        this.props.updateMapId("ChatStore", "groupList", {
-                            data: [{
-                                name: "Distributed System",
-                                _id: "abcdef",
-                                chatId: "1234abcd",
-                                members: ["TPK", "TM", "Pol", "Fair", "Gam", "Golf"]
-                            }, {
-                                name: "Database",
-                                _id: "abcdff",
-                                chatId: "1234abce",
-                                members: ["TPK", "TM", "Pol", "Fair", "Golf"]
-                            }, {
-                                name: "System Analysis and Design",
-                                _id: "abce00",
-                                chatId: "1234abcf",
-                                members: ["TPK", "TM", "Pol", "Fair", "Golf", "Nick"]
-                            }]
-                        })
-                    }
                 }
             }, 10)
         }
+    }
+
+    componentDidMount() {
+        this._isMounted = true
+        this.onInit();
     }
     componentWillUnmount() {
         this._isMounted = false;
@@ -213,7 +229,9 @@ class Index extends Component {
             groupList: [],
             username: this.props.map.UserStat ? this.props.map.UserStat.username : "",
             password: this.props.map.UserStat ? this.props.map.UserStat.password : "",
-            userId: this.props.map.UserStat ? this.props.map.UserStat.userId : ""
+            userId: this.props.map.UserStat ? this.props.map.UserStat.userId : "",
+            picture: _.get(this.props.map, 'UserStat.picture.data', -1),
+            url: _.get(this.props.map, 'Page.location.data', '')
         }
 
         if(this.props.map.ChatStore) {
@@ -266,6 +284,10 @@ class Index extends Component {
                                 propsFunc={propsFunc}
                                 isRendered={!isNoUserFound}
                                 sharedStore={sharedStore}
+                                onFetchChatList={this.onFetchChatList}
+                                selectedChat={_.get(this.props, `map.ChatStore.groupList.data[${this.state.selectedChatIndex}]`, null)}
+                                socket={this.state.socket}
+                                oProps={this.props}
                             />
                             <MainSection
                                 offsetHeight={`${this.state.navHeight}px`}
@@ -283,6 +305,9 @@ class Index extends Component {
                                     onClickCreate={this.onClickCreate}
                                     onCloseCreate={this.onCloseCreate}
                                     isCreating={this.state.isCreating}
+                                    onFetchChatList={this.onFetchChatList}
+                                    socket={this.state.socket}
+                                    propsFunc={propsFunc}
                                 />
                             </MainSection>
                         </section>
@@ -300,5 +325,6 @@ export default enhancedComponent(Index, {
         tag: 'title',
         content: 'Chat Project'
     }],
-    styleUrls: [stylesheet]
+    styleUrls: [stylesheet],
+    callbackDone: callbackRedirect
 })

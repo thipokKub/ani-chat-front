@@ -5,9 +5,17 @@ import { setCookie, getCookie, deleteCookie } from '../function/general';
 import Router from 'next/router';
 import axios from 'axios';
 import _ from 'lodash';
+import io from 'socket.io-client';
+
+const socketUri = 'http://localhost:5000';
+const socket = io(socketUri);
+let onUpdateDesination = () => {}
+
+socket.on('loadbalance', (msg) => {
+    onUpdateDesination(msg);
+})
 
 const CardStyle = styled.form`
-
 &> div {
     display: flex;
     flex-direction: column;
@@ -258,6 +266,11 @@ class LoginPage extends Component {
             registerStatus: "",
             isRemembered: false
         }
+        onUpdateDesination = (msg) => {
+            this.props.updateMapId("Page", "location", {
+                data: msg.destination
+            })
+        }
     }
 
     onToggleRegister = () => {
@@ -330,12 +343,13 @@ class LoginPage extends Component {
             return newState;
         })
         try {
-            const response = await axios.post('http://localhost:3001/user/register',{
+            const response = await axios.post(`${_.get(this.props.map, 'Page.location.data', '')}/user/register`,{
                 name: this.state.registerName,
                 username: this.state.registerUser,
-                password: this.state.registerPassword1
+                password: this.state.registerPassword1,
+                picture: this.state.selectIndex
             });
-            console.log(response);
+            // console.log(response);
           } catch (error) {
             console.error(error);
           }
@@ -358,15 +372,9 @@ class LoginPage extends Component {
             deleteCookie("username")
             deleteCookie("password")
         }
-        this.props.updateMapId(FieldName, "username", {
-            data: loginUser
-        });
-        this.props.updateMapId(FieldName, "password", {
-            data: loginPassword
-        });
         
         try {
-            const response = await axios.post('http://localhost:3001/user/login',{
+            const response = await axios.post(`${_.get(this.props.map, 'Page.location.data', '')}/user/login`,{
                 username: this.state.loginUser,
                 password: this.state.loginPassword
             });
@@ -374,13 +382,38 @@ class LoginPage extends Component {
                 this.props.updateMapId(FieldName, "userId", {
                     data: response.data.id
                 });
+                this.props.updateMapId(FieldName, "username", {
+                    data: loginUser
+                });
+                this.props.updateMapId(FieldName, "password", {
+                    data: loginPassword
+                });
+                this.props.updateMapId(FieldName, "picture", {
+                    data: response.data.picture
+                });
+                if (!this.props.map["ChatStore"] || !_.get(this.props, 'map["ChatStore"]["groupList"].data', null)) {
+                    this.props.initMapId("ChatStore", "groupList")
+                    setTimeout(async () => {
+                        try {
+                            const { userId } = this.props.map.UserStat;
+                            let response = await axios.get(`${_.get(this.props.map, 'Page.location.data', '')}/chat/all?id=${userId.data}`);
+                            response = response.data;
+                            console.log(response)
+                            this.props.updateMapId("ChatStore", "groupList", {
+                                data: response
+                            });
+                        } catch (e) {
+                            console.error(e);
+                        }
+                    }, 0);
+                }
             } else {
                 alert('Login fail!');
             }
             Router.push({
                 pathname: '/chat'
             });
-            console.log(response);
+            // console.log(response);
         } catch (error) {
             console.error(error);
             Router.push({
@@ -406,6 +439,8 @@ class LoginPage extends Component {
             this.props.initMapId(FieldName, "username")
             this.props.initMapId(FieldName, "password")
             this.props.initMapId(FieldName, "userId")
+            this.props.initMapId(FieldName, "picture")
+            this.props.initMapId("Page", "location")
         }
     }
 

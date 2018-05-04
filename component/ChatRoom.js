@@ -7,6 +7,8 @@ import _ from 'lodash';
 import Loader from './Loader';
 import $ from 'jquery';
 import axios from 'axios';
+import io from 'socket.io-client'
+
 const bottomChatHeight = 50;
 
 const ChatRoomStyle = styled.div`
@@ -207,8 +209,10 @@ input, textarea {
 }
 `;
 
+const avatarImages = Array.from(new Array(4).keys()).map((idx) => `/static/resources/avatar/a-0${idx+1}.png`)
 
 const GenerateBubble = (isMe, item, idx) => {
+    
     return (
         <div className={`chatBox ${isMe ? 'right' : ''}`} key={idx}>
             {
@@ -232,7 +236,7 @@ const GenerateBubble = (isMe, item, idx) => {
                     <div className="Profile">
                         <img src="http://via.placeholder.com/100x100" />
                         <span>{item.userName}</span>
-                        <span className="time">{item.time}</span>
+                        <span className="time">{moment(item.time).locale("en").format('Do MMMM YYYY, h:mm:ss a')}</span>
                     </div>
                 ))
             }
@@ -248,6 +252,30 @@ class ChatRoom extends Component {
             chat: [],
             isLoading: false
         }
+        
+        props.socket.on('chat message', (a) => {
+            this.onUpdateMessage({
+                message: a.msg,
+                picture: a.picture,
+                userId: a.userId,
+                userName: a.userName,
+                time: a.time
+            })
+            this.props.propsFunc.updateMapId("LastMsg", "a", {
+                data: ({
+                    message: a.msg,
+                    picture: a.picture,
+                    userId: a.userId,
+                    userName: a.userName,
+                    time: a.time
+                })
+            })
+        })
+
+        this.props.propsFunc.initMapId("LastMsg", "a");
+        this.props.propsFunc.updateMapId("LastMsg", {
+            data: {}
+        })
     }
 
     scrollToBottom = () => {
@@ -260,6 +288,8 @@ class ChatRoom extends Component {
     onUpdateMessage = (newMessage) => {
         this.setState({
             chat: this.state.chat.concat([newMessage])
+        }, () => {
+            this.scrollToBottom();
         })
     }
 
@@ -271,44 +301,62 @@ class ChatRoom extends Component {
 
     onSubmit = async (e) => {
         e.preventDefault();
+        const { socket } = this.props;
         try {
             const Message = this._Message.value;
             if(Message.trim().length > 0) {
                 //Do some api logic here
-                const response = await new Promise(
-                    (res) => {
-                        setTimeout(() => {
-                            res({
-                                "status": 1
-                            })
-                        }, 300)
-                    })
+                socket.emit('send message', {
+                    msg: Message.trim(),
+                    picture: this.props.sharedStore.picture,
+                    userId: this.props.sharedStore.userId.data,
+                    userName: this.props.sharedStore.username.data,
+                    groupId: _.get(this.props, 'selectedChat.id', ''),
+                    time: new Date(Date.now())
+                })
+                if (this._Message) {
+                    this._Message.value = ''
+                }
                 
                 //Internal update
-                this.setState({
-                    chat: this.state.chat.concat([{
-                        userName: _.get(this.props, "sharedStore.username.data", ""),
-                        userId: -1,
-                        message: Message.trim(),
-                        time: moment().locale("en").format('Do MMMM YYYY, h:mm:ss a')
-                    }])
-                }, () => {
-                    this._Message.value = '';
-                    this.scrollToBottom();
-                })
+                // this.setState({
+                //     chat: this.state.chat.concat([{
+                //         userName: _.get(this.props, "sharedStore.username.data", ""),
+                //         userId: -1,
+                //         message: Message.trim(),
+                //         time: moment().locale("en").format('Do MMMM YYYY, h:mm:ss a')
+                //     }])
+                // }, () => {
+                //     this._Message.value = '';
+                //     this.scrollToBottom();
+                // })
             }
         } catch(e) {
-
+            console.log(e)
         }
         
         return false;
     }
 
     onFetchChat = (chatId) => {
+        const { socket } = this.props;
+        const packet = {
+            groupId: chatId,
+            userId: this.props.sharedStore.userId.data
+        }
+        socket.emit('connectGroup', packet)
+        socket.on('join', (res) => {
+            console.log(res);
+        })
+
+        // socket.emit('get unread', (msg) => {
+        //     console.log(msg)
+        // })
+
         this.setState({ isLoading: true })
         setTimeout(() => {
             this.setState({
-                chat: Array.from(new Array(5).keys()).map((idx) => {
+                chat: Array.from(new Array(0).keys()).map((idx) => {
                     const randomP = Math.floor(Math.random() * 2);
                     return ({
                         userName: randomP == 1 ? "Person A" : "Person B",
@@ -329,21 +377,30 @@ class ChatRoom extends Component {
         alert("SAD")
     }
 
-    onJoinRequest = async () => {
+    onJoinRequest = () => {
         this.setState({ isLoading: true })
-
-        console.log(this.props.sharedStore)
-        try{
-            const response = await axios.post('http://localhost:3001/chat/join',{
-                groupId:"5ad5cabd39686d49b8a2331b",
-                userId: this.props.sharedStore.userId.data
-            });
-            console.log(response);
-            alert("Your request had been rejected");
-            this.setState({ isLoading: false })
-        }catch (error) {
-            console.error(error);
-        }
+        setTimeout(async () => {
+            if (_.get(this.props, 'selectedChat.id', '').length > 0) {
+                try{
+                    await axios.post(`${this.props.sharedStore.url}/chat/join`,{
+                        groupId: _.get(this.props, 'selectedChat.id', ''),
+                        userId: this.props.sharedStore.userId.data
+                    });
+                    const response = await axios.post(`${this.props.sharedStore.url}/unread`, {
+                        groupId: _.get(this.props, 'selectedChat.id', ''),
+                        userId: this.props.sharedStore.userId.data
+                    })
+                    console.log(response.data)
+                    this.setState({
+                        chat: response.data.unread
+                    })
+                    this.props.onFetchChatList();
+                    this.setState({ isLoading: false })
+                } catch (error) {
+                    console.error(error);
+                }
+            }
+        }, 500);
     }
 
     componentDidMount() {
@@ -361,8 +418,8 @@ class ChatRoom extends Component {
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
-        if (_.get(prevProps, 'selectedChat.chatId', '') !== _.get(this.props, 'selectedChat.chatId', '')) {
-            this.onFetchChat(_.get(this.props, 'selectedChat.chatId', ''))
+        if (_.get(prevProps, 'selectedChat.id', '') !== _.get(this.props, 'selectedChat.id', '') && _.get(this.props, 'selectedChat.id', '').length > 0) {
+            this.onFetchChat(_.get(this.props, 'selectedChat.id', ''))
             if (prevProps.selectedIndex !== this.props.selectedIndex) {
                 this.setState({ isLoading: true, chat: [] })
             }
@@ -373,12 +430,25 @@ class ChatRoom extends Component {
         this._isMounted = false;
     }
 
-    onRequestNewChat = (e) => {
+    onRequestNewChat = async (e) => {
         e.preventDefault();
-        if ($($(e.target).children()[0]).is("input")) {
-            $(e.target).children()[0].value = '';
-        } else if ($($(e.target).siblings()[0]).is("input")) {
-            $(e.target).siblings()[0].value = '';
+        try {
+            let value = ''
+            if ($($(e.target).children()[0]).is("input")) {
+                value = $(e.target).children()[0].value;
+                $(e.target).children()[0].value = '';
+            } else if ($($(e.target).siblings()[0]).is("input")) {
+                value = $(e.target).siblings()[0].value;
+                $(e.target).siblings()[0].value = '';
+            }
+            if(value.length > 0) {
+                await axios.post(`${this.props.sharedStore.url}/chat`, {
+                    name: value
+                });
+                this.props.onFetchChatList();
+            }
+        } catch (e) {
+            console.error(e);
         }
         return true;
     }
@@ -446,10 +516,9 @@ class ChatRoom extends Component {
             return Default;
         }
 
-        if (_.get(selectedChat, 'members', []).indexOf(_.get(this.props, "sharedStore.username.data", "")) === -1) {
+        if (!_.get(selectedChat, 'ismember', false)) {
             return NotMember;
         }
-
 
         return (
             <ChatRoomStyle
