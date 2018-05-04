@@ -40,11 +40,11 @@ button {
     justify-content: center;
     align-items: center;
     margin: 0;
-    padding: 0;
+    padding: 0 30px;
     border: 0px;
     height: 35px;
     width: 35px;
-    border-radius: 50%;
+    border-radius: 30px;
     margin-right: 5px;
     box-shadow: 0px 3px 10px #00000030;
 
@@ -76,13 +76,27 @@ class AppBar extends Component {
         let _this = this;
         setTimeout(() => {
             if(this._isMounted) {
-                _this.setState({
-                    parentWidth: ReactDOM.findDOMNode(_this._me).parentNode.offsetWidth
-                })
+                let width = 0
+                try {
+                    width = ReactDOM.findDOMNode(_this._me).parentNode.offsetWidth   
+                    _this.setState({
+                        parentWidth: width
+                    })                 
+                } catch (e) {
+                    _this.setState({
+                        parentWidth: 0
+                    })
+                }
                 window.addEventListener("resize", () => {
-                    if (ReactDOM.findDOMNode(_this._me)) {
+                    try {
+                        if (ReactDOM.findDOMNode(_this._me)) {
+                            _this.setState({
+                                parentWidth: ReactDOM.findDOMNode(_this._me).parentNode.offsetWidth
+                            })
+                        }
+                    } catch (e) {
                         _this.setState({
-                            parentWidth: ReactDOM.findDOMNode(_this._me).parentNode.offsetWidth
+                            parentWidth: 0
                         })
                     }
                 })
@@ -95,14 +109,16 @@ class AppBar extends Component {
     }
 
     onLogout = () => {
-        this.props.propsFunc.updateMapId("UserStat", "username", "")
-        this.props.propsFunc.updateMapId("UserStat", "password", "")
-
-        setTimeout(() => {
-            Router.push({
-                pathname: '/'
-            });
-        }, 0);
+        if(window.confirm("Are you sure?")) {
+            this.props.propsFunc.updateMapId("UserStat", "username", "")
+            this.props.propsFunc.updateMapId("UserStat", "password", "")
+    
+            setTimeout(() => {
+                Router.push({
+                    pathname: '/'
+                });
+            }, 0);
+        }
     }
 
     render() {
@@ -116,9 +132,11 @@ class AppBar extends Component {
                 {
                     isMain && (
                         <div className="right">
-                            <button title="Edit Profile">
-                                <i className="fa fa-user" />
-                            </button>
+                            {
+                                // <button title="Edit Profile">
+                                //     <i className="fa fa-user" />
+                                // </button>
+                            }
                             <button
                                 onClick={this.onLogout}
                                 title="Log out"

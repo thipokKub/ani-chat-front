@@ -7,6 +7,7 @@ import stylesheet from './style/index.scss';
 import { Card, AppBar, MainSection, GroupList, ChatRoom } from '../component';
 import styled from 'styled-components';
 import ReactDOM from 'react-dom';
+import _ from 'lodash';
 
 const styles = {
     root: {
@@ -81,7 +82,8 @@ class Index extends Component {
             isNoUserFound: false,
             redirectedDot: 0,
             redirectedInterval: -1,
-            selectedChatIndex: -1
+            selectedChatIndex: -1,
+            isCreating: false
         }
     }
     onChangeSelectedIndex = (idx) => {
@@ -92,7 +94,8 @@ class Index extends Component {
                 })
             } else {
                 this.setState({
-                    selectedChatIndex: idx
+                    selectedChatIndex: idx,
+                    isCreating: false
                 })
             }
         }
@@ -152,17 +155,9 @@ class Index extends Component {
                             }, {
                                 name: "System Analysis and Design",
                                 _id: "abce00",
-                                charId: "1234abcf",
+                                chatId: "1234abcf",
                                 members: ["TPK", "TM", "Pol", "Fair", "Golf", "Nick"]
                             }]
-                        })
-                        this.props.initMapId("ChatStore", "chatList")
-                        this.props.updateMapId("ChatStore", "chatList", {
-                            data: {
-                                "1234abcd": [],
-                                "abcdff": [],
-                                "abce00": []
-                            }
                         })
                     }
                 }
@@ -171,6 +166,18 @@ class Index extends Component {
     }
     componentWillUnmount() {
         this._isMounted = false;
+    }
+    onClickCreate = () => {
+        this.setState({ isCreating: true })
+    }
+    onCloseCreate = () => {
+        this.setState({ isCreating: false })
+    }
+    onToggleCreate = () => {
+        this.setState({
+            isCreating: !this.state.isCreating,
+            selectedChatIndex: -1
+        })
     }
     render() {
         const propsFunc = {
@@ -234,6 +241,9 @@ class Index extends Component {
                                     isRendered={!isNoUserFound}
                                     sharedStore={sharedStore}
                                     onSelectedIndex={this.onChangeSelectedIndex}
+                                    onToggleCreate={this.onToggleCreate}
+                                    isCreating={this.state.isCreating}
+                                    onCloseCreate={this.onCloseCreate}
                                 />
                             </MainSection>
                         </section>
@@ -259,6 +269,10 @@ class Index extends Component {
                                     isRendered={!isNoUserFound}
                                     sharedStore={sharedStore}
                                     selectedIndex={this.state.selectedChatIndex}
+                                    selectedChat={_.get(this.props, `map.ChatStore.groupList.data[${this.state.selectedChatIndex}]`, null)}
+                                    onClickCreate={this.onClickCreate}
+                                    onCloseCreate={this.onCloseCreate}
+                                    isCreating={this.state.isCreating}
                                 />
                             </MainSection>
                         </section>

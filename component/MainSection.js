@@ -13,13 +13,9 @@ position: fixed;
 overflow-y: scroll;
 /* overflow: hidden; */
 
-/* .scroll-content {
-    position: relative;
-    width: calc(100% + 12px);
-    overflow-y: scroll;
-    overflow-x: hidden;
+.scroll-content {
     height: 100%;
-} */
+}
 `;
 
 class MainSection extends Component {

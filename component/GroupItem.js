@@ -195,6 +195,19 @@ function translateColorItem(hashId, isReverse) {
 
 const GroupItem = (props) => {
     const { item } = props;
+
+    if (typeof props.renderJSX === "function") {
+        return (
+            <GroupItemStyle
+                innerColor={props.innerColor}
+                outerColor={props.outerColor}
+                onClick={props.onSelect}
+            >
+                {props.renderJSX({ ...props })}
+            </GroupItemStyle>
+        );
+    }
+    
     const innerColor = colorList[translateColorItem(item._id, false)]
     const outerColor = colorList[translateColorItem(item._id, true)]
     const isDarkImg = isDark(innerColor, outerColor);
@@ -215,9 +228,11 @@ const GroupItem = (props) => {
                 <div>
                     <span>Members {item.members.length}</span>
                 </div>
-                <div data-role="notification">
-                    999+
-                </div>
+                {
+                    // <div data-role="notification">
+                    //     999+
+                    // </div>
+                }
             </div>
         </GroupItemStyle>
     );

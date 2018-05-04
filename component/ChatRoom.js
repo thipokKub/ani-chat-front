@@ -1,7 +1,11 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
-import ReactDOM from 'react-dom';
 import AutoSizeTextArea from './AutoTextArea';
+import moment from 'moment';
+import Lorem from './LoremIpsum';
+import _ from 'lodash';
+import Loader from './Loader';
+import $ from 'jquery';
 
 const bottomChatHeight = 50;
 
@@ -10,6 +14,16 @@ height: 100%;
 box-sizing: border-box;
 width: 100%;
 overflow-x: hidden;
+position: relative;
+
+.middle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+}
+
 .chatBox {
     display: flex;
     margin: 10px 20px;
@@ -193,47 +207,212 @@ input, textarea {
 }
 `;
 
+
+const GenerateBubble = (isMe, item, idx) => {
+    return (
+        <div className={`chatBox ${isMe ? 'right' : ''}`} key={idx}>
+            {
+                (!isMe && (
+                    <div className="Profile">
+                        <img src="http://via.placeholder.com/100x100" />
+                        <span>{item.userName}</span>
+                        <span className="time">{item.time}</span>
+                    </div>
+                ))
+            }
+            <div>
+                <div className={`MessageDialogue ${isMe ? 'right blue' : 'left'}`}>
+                    <span>
+                        {item.message}
+                    </span>
+                </div>
+            </div>
+            {
+                (isMe && (
+                    <div className="Profile">
+                        <img src="http://via.placeholder.com/100x100" />
+                        <span>{item.userName}</span>
+                        <span className="time">{item.time}</span>
+                    </div>
+                ))
+            }
+        </div>
+    );
+}
+
 class ChatRoom extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            width: -1
+            width: -1,
+            chat: [],
+            isLoading: false
         }
     }
 
-    onSubmit = (e) => {
+    scrollToBottom = () => {
+        const elem = $(".chatRoom")[0];
+        $(".chatRoom").animate({
+            scrollTop: elem.scrollHeight
+        }, 200)
+    }
+
+    onUpdateMessage = (newMessage) => {
+        this.setState({
+            chat: this.state.chat.concat([newMessage])
+        })
+    }
+
+    onUpdateMessages = (newMessages) => {
+        this.setState({
+            chat: this.state.chat.concat(newMessages)
+        })
+    }
+
+    onSubmit = async (e) => {
         e.preventDefault();
-        const Message = this._Message.value;
-        this._Message.value = ''
+        try {
+            const Message = this._Message.value;
+            if(Message.trim().length > 0) {
+                //Do some api logic here
+                const response = await new Promise(
+                    (res) => {
+                        setTimeout(() => {
+                            res({
+                                "status": 1
+                            })
+                        }, 300)
+                    })
+                
+                //Internal update
+                this.setState({
+                    chat: this.state.chat.concat([{
+                        userName: _.get(this.props, "sharedStore.username.data", ""),
+                        userId: -1,
+                        message: Message.trim(),
+                        time: moment().locale("en").format('Do MMMM YYYY, h:mm:ss a')
+                    }])
+                }, () => {
+                    this._Message.value = '';
+                    this.scrollToBottom();
+                })
+            }
+        } catch(e) {
+
+        }
+        
         return false;
+    }
+
+    onFetchChat = (chatId) => {
+        this.setState({ isLoading: true })
+        setTimeout(() => {
+            this.setState({
+                chat: Array.from(new Array(5).keys()).map((idx) => {
+                    const randomP = Math.floor(Math.random() * 2);
+                    return ({
+                        userName: randomP == 1 ? "Person A" : "Person B",
+                        userId: randomP,
+                        message: Lorem.getSentence(),
+                        time: moment().locale("en").format('Do MMMM YYYY, h:mm:ss a')
+                    });
+                }),
+                isLoading: false
+            }, () => {
+                const elem = $(".chatRoom")[0];
+                elem.scrollTop = elem.scrollHeight
+            })
+        }, Math.floor(Math.random()*1.5*1000 + 500));
     }
 
     onRejectRequest = () => {
         alert("SAD")
     }
 
+    onRequestJoin = () => {
+        this.setState({ isLoading: true })
+        setTimeout(() => {
+            alert("Your request had been rejected");
+            this.setState({ isLoading: false })
+        }, 1500);
+    }
+
     componentDidMount() {
         this._isMounted = true
         setTimeout(() => {
             if(this._isMounted) {
-                this.setState({ width: ReactDOM.findDOMNode(this).offsetWidth });
+                this.setState({ width: $(".chatRoom")[0].offsetWidth });
 
                 let _this = this;
                 window.addEventListener("resize", () => {
-                    _this.setState({ width: ReactDOM.findDOMNode(_this).offsetWidth });
+                    _this.setState({ width: $(".chatRoom")[0].offsetWidth });
                 })
             }
         }, 10);
+    }
+
+    componentDidUpdate(prevProps, prevState, snapshot) {
+        if (_.get(prevProps, 'selectedChat.chatId', '') !== _.get(this.props, 'selectedChat.chatId', '')) {
+            this.onFetchChat(_.get(this.props, 'selectedChat.chatId', ''))
+            if (prevProps.selectedIndex !== this.props.selectedIndex) {
+                this.setState({ isLoading: true, chat: [] })
+            }
+        }
     }
 
     componentWillUnmount() {
         this._isMounted = false;
     }
 
+    onRequestNewChat = (e) => {
+        e.preventDefault();
+        if ($($(e.target).children()[0]).is("input")) {
+            $(e.target).children()[0].value = '';
+        } else if ($($(e.target).siblings()[0]).is("input")) {
+            $(e.target).siblings()[0].value = '';
+        }
+        return true;
+    }
+
     render() {
-        const { selectedIndex } = this.props;
+        const { selectedIndex, selectedChat, isCreating } = this.props;
+        const { chat, isLoading } = this.state;
+
+        if (isLoading && selectedIndex !== -1) {
+            return (
+                <ChatRoomStyle width={this.state.width} className="chatRoom">
+                    <div className="middle">
+                        <Loader scale={2} />
+                    </div>
+                </ChatRoomStyle>
+            );
+        }
+
+        if (isCreating) {
+            return (
+                <ChatRoomStyle width={this.state.width} className="chatRoom">
+                    <div className="center">
+                        <img src="/static/resources/logo/light.png" />
+                        <span>Ceate New Chat</span>
+                        <form onSubmit={this.onRequestNewChat}>
+                            <div style={{ display: 'flex'}}>
+                                <input placeholder="Chat Name"/>
+                                <button
+                                    type="submit"
+                                    style={{
+                                        borderRadius: '20px'
+                                    }}
+                                    onClick={this.onRequestNewChat}
+                                ><i className="fa fa-paper-plane" /></button>
+                            </div>
+                        </form>
+                    </div>
+                </ChatRoomStyle>
+            );
+        }
+
         const Default = (
-            <ChatRoomStyle width={this.state.width}>
+            <ChatRoomStyle width={this.state.width} className="chatRoom">
                 <div className="center">
                     <img src="/static/resources/logo/light.png" />
                     <span>No Chat Selected</span>
@@ -242,12 +421,12 @@ class ChatRoom extends Component {
         );
 
         const NotMember = (
-            <ChatRoomStyle width={this.state.width}>
+            <ChatRoomStyle width={this.state.width} className="chatRoom">
                 <div className="center">
                     <img src="/static/resources/logo/light.png" />
                     <span>You are not a member. Do you want to join?</span>
                     <div>
-                        <button>Yes</button>
+                        <button onClick={this.onRequestJoin}>Yes</button>
                         <button onClick={this.onRejectRequest}>No</button>
                     </div>
                 </div>
@@ -255,152 +434,24 @@ class ChatRoom extends Component {
         )
 
         if(selectedIndex === -1) {
-            return Math.floor(Math.random() * 1000) < 500 ? Default : NotMember;
+            return Default;
         }
 
+        if (_.get(selectedChat, 'members', []).indexOf(_.get(this.props, "sharedStore.username.data", "")) === -1) {
+            return NotMember;
+        }
+
+
         return (
-            <ChatRoomStyle width={this.state.width}>
+            <ChatRoomStyle
+                width={this.state.width}
+                style={{ paddingBottom: '30px'}}
+                className="chatRoom"
+            >
                 <div className="chat-list">
-                    <div className="chatBox">
-                        <div className="Profile">
-                            <img src="http://via.placeholder.com/100x100" />
-                            <span>Person A</span>
-                            <span className="time">Time</span>
-                        </div>
-                        <div>
-                            <div className="MessageDialogue left blue">
-                                <span>
-                                    Dolore sint veniam sint do exercitation reprehenderit. Et ea laborum velit ea anim pariatur nulla dolor nulla aute nulla consequat ipsum. Irure culpa laborum mollit sunt amet nulla deserunt. Magna aute excepteur eiusmod consectetur excepteur ipsum consectetur sit reprehenderit fugiat commodo esse. Proident sunt esse do eu pariatur exercitation tempor minim. Laboris nisi esse anim ad id nisi quis fugiat sunt. Ea occaecat esse fugiat aliquip velit quis. Veniam Lorem incididunt labore cupidatat enim eiusmod.
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="chatBox right">
-                        <div>
-                            <div className="MessageDialogue right blue">
-                                <span>
-                                    Test dialogue
-                                </span>
-                            </div>
-                        </div>
-                        <div className="Profile">
-                            <img src="http://via.placeholder.com/100x100" />
-                            <span>Person B</span>
-                            <span className="time">Time</span>
-                        </div>
-                    </div>
-                    <div className="chatBox">
-                        <div className="Profile">
-                            <img src="http://via.placeholder.com/100x100" />
-                            <span>Person A</span>
-                            <span className="time">Time</span>
-                        </div>
-                        <div>
-                            <div className="MessageDialogue left blue">
-                                <span>
-                                    Test dialogue
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="chatBox right">
-                        <div>
-                            <div className="MessageDialogue right blue">
-                                <span>
-                                    Test dialogue
-                                </span>
-                            </div>
-                        </div>
-                        <div className="Profile">
-                            <img src="http://via.placeholder.com/100x100" />
-                            <span>Person B</span>
-                            <span className="time">Time</span>
-                        </div>
-                    </div>
-                    <div className="chatBox">
-                        <div className="Profile">
-                            <img src="http://via.placeholder.com/100x100" />
-                            <span>Person A</span>
-                            <span className="time">Time</span>
-                        </div>
-                        <div>
-                            <div className="MessageDialogue left blue">
-                                <span>
-                                    Test dialogue
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="chatBox right">
-                        <div>
-                            <div className="MessageDialogue right blue">
-                                <span>
-                                    Test dialogue
-                                </span>
-                            </div>
-                        </div>
-                        <div className="Profile">
-                            <img src="http://via.placeholder.com/100x100" />
-                            <span>Person B</span>
-                            <span className="time">Time</span>
-                        </div>
-                    </div>
-                    <div className="chatBox">
-                        <div className="Profile">
-                            <img src="http://via.placeholder.com/100x100" />
-                            <span>Person A</span>
-                            <span className="time">Time</span>
-                        </div>
-                        <div>
-                            <div className="MessageDialogue left blue">
-                                <span>
-                                    Test dialogue
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="chatBox right">
-                        <div>
-                            <div className="MessageDialogue right blue">
-                                <span>
-                                    Test dialogue
-                                </span>
-                            </div>
-                        </div>
-                        <div className="Profile">
-                            <img src="http://via.placeholder.com/100x100" />
-                            <span>Person B</span>
-                            <span className="time">Time</span>
-                        </div>
-                    </div>
-                    <div className="chatBox">
-                        <div className="Profile">
-                            <img src="http://via.placeholder.com/100x100" />
-                            <span>Person A</span>
-                            <span className="time">Time</span>
-                        </div>
-                        <div>
-                            <div className="MessageDialogue left blue">
-                                <span>
-                                    Test dialogue
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="chatBox right">
-                        <div>
-                            <div className="MessageDialogue right blue">
-                                <span>
-                                    Test dialogue
-                                </span>
-                            </div>
-                        </div>
-                        <div className="Profile">
-                            <img src="http://via.placeholder.com/100x100" />
-                            <span>Person B</span>
-                            <span className="time">Time</span>
-                        </div>
-                    </div>
+                    {chat.map((item, idx) => {
+                        return GenerateBubble(item.userName === _.get(this.props, "sharedStore.username.data", ""), item, idx)
+                    })}
                 </div>
                 <form
                     className="bottom-chat"

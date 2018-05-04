@@ -400,6 +400,7 @@ class LoginPage extends Component {
                                     placeholder="Username"
                                     onChange={this.onHandleStateChange("loginUser")}
                                     ref={(me) => this._user = me}
+                                    maxLength={10}
                                 />
                                 <input
                                     type="password"
@@ -431,6 +432,7 @@ class LoginPage extends Component {
                                     placeholder="Username"
                                     onChange={this.onHandleStateChange("registerUser")}
                                     value={registerUser}
+                                    maxLength={10}
                                 />
                                 <input
                                     type="password"
