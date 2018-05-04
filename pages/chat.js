@@ -78,6 +78,8 @@ section.background {
 
 let callbackRedirect = null;
 
+const defaultUrl = 'http://localhost:3001';
+
 class Index extends Component {
     constructor(props) {
         super(props);
@@ -88,25 +90,31 @@ class Index extends Component {
             redirectedInterval: -1,
             selectedChatIndex: -1,
             isCreating: false,
-            socket: io("http://localhost:3001")
+            socket: io(defaultUrl),
+            socketVersion: 0
         }
-        callbackRedirect = () => {
-            setTimeout(() => {
-                if (this._isMounted) {
-                    this.onInit();
-                }
-            }, 50);
+    }
+    onCreateSocket = (url) => {
+        this.onDisconnected(() => {
+            this.setState({
+                socket: io(url, { 'forceNew': true }),
+                socketVersion: this.state.socketVersion + 1
+            }, () => {
+                this.state.socket.on('connect_error', function (e) {
+                    this.state.socket.io.reconnection(false);
+                });
+            })
+        })
+    }
+    onDisconnected = (callback) => {
+        try {
+            this.state.socket.emit('disconnect', "Hi");
+            if(typeof callback === "function") callback();
+        } catch (e) {
+            console.error(e);
         }
     }
     onChangeSelectedIndex = (idx) => {
-        // var socket = io("http://localhost:3001");
-        // const packet = {
-        //     userId: this.props.map.UserStat.username,
-        //     groupId: "5ad5cabd39686d49b8a2331b"
-        // }
-        // socket.emit('connectGroup',packet ,function(result) {
-        //     console.log(result);
-        // })
         return () => {
             if (this.state.selectedChatIndex === idx) {
                 this.setState({
@@ -126,6 +134,10 @@ class Index extends Component {
         ) {
             this.onInit();
         }
+        if (_.get(prevProps, 'des.location', '') !== _.get(this.props, 'des.location', '')) {
+            this.onCreateSocket(_.get(this.props, 'des.location', ''))
+        }
+
     }
     onFetchChatList = () => {
         setTimeout(async () => {
@@ -231,7 +243,7 @@ class Index extends Component {
             password: this.props.map.UserStat ? this.props.map.UserStat.password : "",
             userId: this.props.map.UserStat ? this.props.map.UserStat.userId : "",
             picture: _.get(this.props.map, 'UserStat.picture.data', -1),
-            url: _.get(this.props.map, 'Page.location.data', '')
+            url: _.get(this.props, 'des.location', '')
         }
 
         if(this.props.map.ChatStore) {
@@ -272,6 +284,8 @@ class Index extends Component {
                                     onToggleCreate={this.onToggleCreate}
                                     isCreating={this.state.isCreating}
                                     onCloseCreate={this.onCloseCreate}
+                                    socket={this.state.socket}
+                                    socketVersion={this.state.socketVersion}
                                 />
                             </MainSection>
                         </section>
@@ -287,6 +301,7 @@ class Index extends Component {
                                 onFetchChatList={this.onFetchChatList}
                                 selectedChat={_.get(this.props, `map.ChatStore.groupList.data[${this.state.selectedChatIndex}]`, null)}
                                 socket={this.state.socket}
+                                socketVersion={this.state.socketVersion}
                                 oProps={this.props}
                             />
                             <MainSection
@@ -307,6 +322,7 @@ class Index extends Component {
                                     isCreating={this.state.isCreating}
                                     onFetchChatList={this.onFetchChatList}
                                     socket={this.state.socket}
+                                    socketVersion={this.state.socketVersion}
                                     propsFunc={propsFunc}
                                 />
                             </MainSection>

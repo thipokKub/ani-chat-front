@@ -7,7 +7,8 @@ import _ from 'lodash';
 import Loader from './Loader';
 import $ from 'jquery';
 import axios from 'axios';
-import io from 'socket.io-client'
+import io from 'socket.io-client';
+import withRedux from '../hoc/enhancedComponent';
 
 const bottomChatHeight = 50;
 
@@ -424,6 +425,39 @@ class ChatRoom extends Component {
                 this.setState({ isLoading: true, chat: [] })
             }
         }
+
+        if(prevProps.socketVersion !== this.props.socketVersion) {
+            const socket = this.props.socket;
+            if(_.get(this.props, 'selectedChat.id', '').length > 0) {
+                const packet = {
+                    groupId: _.get(this.props, 'selectedChat.id', ''),
+                    userId: this.props.sharedStore.userId.data
+                }
+                socket.emit('connectGroup', packet)
+                socket.on('join', (res) => {
+                    console.log(res);
+                })
+            }
+
+            socket.on('chat message', (a) => {
+                this.onUpdateMessage({
+                    message: a.msg,
+                    picture: a.picture,
+                    userId: a.userId,
+                    userName: a.userName,
+                    time: a.time
+                })
+                this.props.propsFunc.updateMapId("LastMsg", "a", {
+                    data: ({
+                        message: a.msg,
+                        picture: a.picture,
+                        userId: a.userId,
+                        userName: a.userName,
+                        time: a.time
+                    })
+                })
+            })
+        }
     }
 
     componentWillUnmount() {
@@ -543,4 +577,6 @@ class ChatRoom extends Component {
     }
 }
 
-export default ChatRoom;
+export default withRedux(ChatRoom, {
+    isEnableRedux: true
+});

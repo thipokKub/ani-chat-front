@@ -267,9 +267,7 @@ class LoginPage extends Component {
             isRemembered: false
         }
         onUpdateDesination = (msg) => {
-            this.props.updateMapId("Page", "location", {
-                data: msg.destination
-            })
+            this.props.updateLocation(msg.destination);
         }
     }
 
@@ -343,7 +341,7 @@ class LoginPage extends Component {
             return newState;
         })
         try {
-            const response = await axios.post(`${_.get(this.props.map, 'Page.location.data', '')}/user/register`,{
+            const response = await axios.post(`${_.get(this.props, 'des.location', '')}/user/register`,{
                 name: this.state.registerName,
                 username: this.state.registerUser,
                 password: this.state.registerPassword1,
@@ -374,7 +372,7 @@ class LoginPage extends Component {
         }
         
         try {
-            const response = await axios.post(`${_.get(this.props.map, 'Page.location.data', '')}/user/login`,{
+            const response = await axios.post(`${_.get(this.props, 'des.location', '')}/user/login`,{
                 username: this.state.loginUser,
                 password: this.state.loginPassword
             });
@@ -396,7 +394,7 @@ class LoginPage extends Component {
                     setTimeout(async () => {
                         try {
                             const { userId } = this.props.map.UserStat;
-                            let response = await axios.get(`${_.get(this.props.map, 'Page.location.data', '')}/chat/all?id=${userId.data}`);
+                            let response = await axios.get(`${_.get(this.props, 'des.location', '')}/chat/all?id=${userId.data}`);
                             response = response.data;
                             console.log(response)
                             this.props.updateMapId("ChatStore", "groupList", {
