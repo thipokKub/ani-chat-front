@@ -2,7 +2,9 @@ import React, { Component } from 'react';
 import enhancedComponent from '../hoc/enhancedComponent';
 import styled from 'styled-components';
 import { setCookie, getCookie, deleteCookie } from '../function/general';
-import Router from 'next/router'
+import Router from 'next/router';
+import axios from 'axios';
+import _ from 'lodash';
 
 const CardStyle = styled.form`
 
@@ -141,7 +143,7 @@ input:not([type="checkbox"]) {
         background: white;
         width: 2px;
         height: 2px;
-        box-shadow: 
+        box-shadow:
         2px 0 0 white,
         4px 0 0 white,
         4px -2px 0 white,
@@ -155,7 +157,7 @@ input:not([type="checkbox"]) {
 .avatar-select-container {
     overflow-x: scroll;
     overflow-y: hidden;
-    height: calc(2*10px + 100px + 10px);
+    height: calc(2*10px + 100px);
 }
 
 ul.avatar-select {
@@ -168,7 +170,7 @@ ul.avatar-select {
         height: 100px;
         display: inline-block;
         margin: 10px;
-        
+
         &.active {
             background-color: #6BFF71;
         }
@@ -249,6 +251,7 @@ class LoginPage extends Component {
             selectIndex: -1,
             loginUser: "",
             loginPassword: "",
+            registerName:"",
             registerUser: "",
             registerPassword1: "",
             registerPassword2: "",
@@ -261,6 +264,7 @@ class LoginPage extends Component {
         if (this.state.isAtRegister && this.state.registerStatus === "Success") {
             this.setState({
                 isAtRegister: !this.state.isAtRegister,
+                registerName:"",
                 registerUser: "",
                 registerPassword1: "",
                 registerPassword2: "",
@@ -301,7 +305,7 @@ class LoginPage extends Component {
         }
     }
 
-    onRegisterSubmit = () => {
+    onRegisterSubmit = async () => {
         this.setState((prevState) => {
             let newState = {
                 ...prevState
@@ -325,9 +329,19 @@ class LoginPage extends Component {
             newState.registerStatus = "Success"
             return newState;
         })
+        try {
+            const response = await axios.post('http://localhost:3001/user/register',{
+                name: this.state.registerName,
+                username: this.state.registerUser,
+                password: this.state.registerPassword1
+            });
+            console.log(response);
+          } catch (error) {
+            console.error(error);
+          }
     }
 
-    onLogin = () => {
+    onLogin = async () => {
         const { isRemembered, loginUser, loginPassword } = this.state;
         if(isRemembered) {
             setCookie({
@@ -350,11 +364,26 @@ class LoginPage extends Component {
         this.props.updateMapId(FieldName, "password", {
             data: loginPassword
         });
-        setTimeout(() => {
-            Router.push({
-                pathname: '/chat'
+        
+        try {
+            const response = await axios.post('http://localhost:3001/user/login',{
+                username: this.state.loginUser,
+                password: this.state.loginPassword
             });
-        }, 500);
+            if (_.get(response, ['data', 'error'] , null) === null){
+                this.props.updateMapId(FieldName, "userId", {
+                    data: response.data.id
+                });
+                Router.push({
+                    pathname: '/chat'
+                });
+            } else {
+                alert('Login fail!');
+            }
+            console.log(response);
+        } catch (error) {
+        console.error(error);
+        }
     }
 
     componentDidMount() {
@@ -373,6 +402,7 @@ class LoginPage extends Component {
         if (!this.props.map[FieldName]) {
             this.props.initMapId(FieldName, "username")
             this.props.initMapId(FieldName, "password")
+            this.props.initMapId(FieldName, "userId")
         }
     }
 
@@ -381,6 +411,7 @@ class LoginPage extends Component {
             selectIndex,
             registerStatus,
             isRemembered,
+            registerName,
             registerUser,
             registerPassword1,
             registerPassword2
@@ -428,6 +459,11 @@ class LoginPage extends Component {
                             <h2>Register</h2>
                             <hr />
                             <div>
+                                <input
+                                    placeholder="Name"
+                                    onChange={this.onHandleStateChange("registerName")}
+                                    value={registerName}
+                                />
                                 <input
                                     placeholder="Username"
                                     onChange={this.onHandleStateChange("registerUser")}

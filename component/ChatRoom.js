@@ -1,12 +1,16 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import AutoSizeTextArea from './AutoTextArea';
+<<<<<<< HEAD
 import moment from 'moment';
 import Lorem from './LoremIpsum';
 import _ from 'lodash';
 import Loader from './Loader';
 import $ from 'jquery';
 
+=======
+import axios from 'axios';
+>>>>>>> 3d3b42f62e58ff0192c3035f2dcc8bc3dedbd600
 const bottomChatHeight = 50;
 
 const ChatRoomStyle = styled.div`
@@ -329,12 +333,21 @@ class ChatRoom extends Component {
         alert("SAD")
     }
 
-    onRequestJoin = () => {
+    onJoinRequest = async () => {
         this.setState({ isLoading: true })
-        setTimeout(() => {
+
+        console.log(this.props.sharedStore)
+        try{
+            const response = await axios.post('http://localhost:3001/chat/join',{
+                groupId:"5ad5cabd39686d49b8a2331b",
+                userId: this.props.sharedStore.userId.data
+            });
+            console.log(response);
             alert("Your request had been rejected");
             this.setState({ isLoading: false })
-        }, 1500);
+        }catch (error) {
+            console.error(error);
+        }
     }
 
     componentDidMount() {
@@ -426,7 +439,7 @@ class ChatRoom extends Component {
                     <img src="/static/resources/logo/light.png" />
                     <span>You are not a member. Do you want to join?</span>
                     <div>
-                        <button onClick={this.onRequestJoin}>Yes</button>
+                        <button onClick={this.onJoinRequest}>Yes</button>
                         <button onClick={this.onRejectRequest}>No</button>
                     </div>
                 </div>
