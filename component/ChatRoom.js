@@ -404,7 +404,7 @@ class ChatRoom extends Component {
                         <img src="/static/resources/logo/light.png" />
                         <span>Ceate New Chat</span>
                         <form onSubmit={this.onRequestNewChat}>
-                            <div style={{ display: 'flex'}}>
+                            <div style={{ display: 'flex', marginTop: '10px'}}>
                                 <input placeholder="Chat Name"/>
                                 <button
                                     type="submit"
