@@ -1,16 +1,12 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import AutoSizeTextArea from './AutoTextArea';
-<<<<<<< HEAD
 import moment from 'moment';
 import Lorem from './LoremIpsum';
 import _ from 'lodash';
 import Loader from './Loader';
 import $ from 'jquery';
-
-=======
 import axios from 'axios';
->>>>>>> 3d3b42f62e58ff0192c3035f2dcc8bc3dedbd600
 const bottomChatHeight = 50;
 
 const ChatRoomStyle = styled.div`

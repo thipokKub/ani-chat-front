@@ -7,11 +7,8 @@ import stylesheet from './style/index.scss';
 import { Card, AppBar, MainSection, GroupList, ChatRoom } from '../component';
 import styled from 'styled-components';
 import ReactDOM from 'react-dom';
-<<<<<<< HEAD
 import _ from 'lodash';
-=======
 import io from 'socket.io-client';
->>>>>>> 3d3b42f62e58ff0192c3035f2dcc8bc3dedbd600
 
 const styles = {
     root: {

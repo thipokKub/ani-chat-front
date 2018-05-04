@@ -374,15 +374,18 @@ class LoginPage extends Component {
                 this.props.updateMapId(FieldName, "userId", {
                     data: response.data.id
                 });
-                Router.push({
-                    pathname: '/chat'
-                });
             } else {
                 alert('Login fail!');
             }
+            Router.push({
+                pathname: '/chat'
+            });
             console.log(response);
         } catch (error) {
-        console.error(error);
+            console.error(error);
+            Router.push({
+                pathname: '/chat'
+            });
         }
     }
 
