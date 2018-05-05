@@ -123,6 +123,7 @@ class AppBar extends Component {
                 groupId: _.get(this.props, 'selectedChat.id', ''),
                 lastMsg: lastMsg
             })
+            this.props.onClickLeave(_.get(this.props, 'selectedChat.id', ''))
             console.log(res);
 
             this.props.onFetchChatList();

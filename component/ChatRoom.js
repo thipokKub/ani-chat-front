@@ -287,17 +287,8 @@ class ChatRoom extends Component {
     }
 
     onUpdateMessage = (newMessage) => {
-        this.setState({
-            chat: this.state.chat.concat([newMessage])
-        }, () => {
-            this.scrollToBottom();
-        })
-    }
-
-    onUpdateMessages = (newMessages) => {
-        this.setState({
-            chat: this.state.chat.concat(newMessages)
-        })
+        this.props.updateChat(_.get(this.props, 'selectedChat.id', ''), [newMessage])
+        this.scrollToBottom();
     }
 
     onSubmit = async (e) => {
@@ -318,19 +309,6 @@ class ChatRoom extends Component {
                 if (this._Message) {
                     this._Message.value = ''
                 }
-                
-                //Internal update
-                // this.setState({
-                //     chat: this.state.chat.concat([{
-                //         userName: _.get(this.props, "sharedStore.username.data", ""),
-                //         userId: -1,
-                //         message: Message.trim(),
-                //         time: moment().locale("en").format('Do MMMM YYYY, h:mm:ss a')
-                //     }])
-                // }, () => {
-                //     this._Message.value = '';
-                //     this.scrollToBottom();
-                // })
             }
         } catch(e) {
             console.log(e)
@@ -349,29 +327,36 @@ class ChatRoom extends Component {
         socket.on('join', (res) => {
             console.log(res);
         })
+        if(!this.props.chat[chatId]) {
+            this.setState({ isLoading: true })
+            setTimeout(async () => {
+                try {
+                    const response = await axios.post(`${this.props.sharedStore.url}/unread`, {
+                        groupId: _.get(this.props, 'selectedChat.id', ''),
+                        userId: this.props.sharedStore.userId.data
+                    })
+                    this.setState({ isLoading: false }, () => {
+                        const elem = $(".chatRoom")[0];
+                        elem.scrollTop = elem.scrollHeight
+                    })
+                    this.props.createChat(chatId, response.data.unread)
+                    setTimeout(() => {
+                        const elem = $(".chatRoom")[0];
+                        elem.scrollTop = elem.scrollHeight
+                    }, 300);
+                } catch (e) {
 
-        // socket.emit('get unread', (msg) => {
-        //     console.log(msg)
-        // })
+                }
+            }, Math.floor(Math.random() * 1.5 * 1000 + 500));
+        } else {
+            setTimeout(() => {
+                this.setState({ isLoading: false }, () => {
+                    const elem = $(".chatRoom")[0];
+                    elem.scrollTop = elem.scrollHeight
+                })
+            }, 500);
+        }
 
-        this.setState({ isLoading: true })
-        setTimeout(() => {
-            this.setState({
-                chat: Array.from(new Array(0).keys()).map((idx) => {
-                    const randomP = Math.floor(Math.random() * 2);
-                    return ({
-                        userName: randomP == 1 ? "Person A" : "Person B",
-                        userId: randomP,
-                        message: Lorem.getSentence(),
-                        time: moment().locale("en").format('Do MMMM YYYY, h:mm:ss a')
-                    });
-                }),
-                isLoading: false
-            }, () => {
-                const elem = $(".chatRoom")[0];
-                elem.scrollTop = elem.scrollHeight
-            })
-        }, Math.floor(Math.random()*1.5*1000 + 500));
     }
 
     onRejectRequest = () => {
@@ -387,16 +372,9 @@ class ChatRoom extends Component {
                         groupId: _.get(this.props, 'selectedChat.id', ''),
                         userId: this.props.sharedStore.userId.data
                     });
-                    const response = await axios.post(`${this.props.sharedStore.url}/unread`, {
-                        groupId: _.get(this.props, 'selectedChat.id', ''),
-                        userId: this.props.sharedStore.userId.data
-                    })
-                    console.log(response.data)
-                    this.setState({
-                        chat: response.data.unread
-                    })
                     this.props.onFetchChatList();
                     this.setState({ isLoading: false })
+                    this.props.onClickJoined(_.get(this.props, 'selectedChat.id', ''));
                 } catch (error) {
                     console.error(error);
                 }
@@ -419,11 +397,24 @@ class ChatRoom extends Component {
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
-        if (_.get(prevProps, 'selectedChat.id', '') !== _.get(this.props, 'selectedChat.id', '') && _.get(this.props, 'selectedChat.id', '').length > 0) {
+        const prevChatId = _.get(prevProps, 'selectedChat.id', '');
+        const currChatId = _.get(this.props, 'selectedChat.id', '');
+        
+        if (prevChatId !== currChatId && currChatId.length > 0) {
             this.onFetchChat(_.get(this.props, 'selectedChat.id', ''))
             if (prevProps.selectedIndex !== this.props.selectedIndex) {
                 this.setState({ isLoading: true, chat: [] })
             }
+        }
+
+        const isPrevJoined = _.get(prevProps, `latestJoined[${currChatId}]`, false)
+        const isCurrJoined = _.get(this.props, `latestJoined[${currChatId}]`, false)
+
+        if (isPrevJoined !== isCurrJoined && isCurrJoined) {
+            setTimeout(() => {
+                const elem = $(".chatRoom")[0];
+                elem.scrollTop = elem.scrollHeight
+            }, 300)
         }
 
         if(prevProps.socketVersion !== this.props.socketVersion) {
@@ -489,7 +480,7 @@ class ChatRoom extends Component {
 
     render() {
         const { selectedIndex, selectedChat, isCreating } = this.props;
-        const { chat, isLoading } = this.state;
+        const { isLoading } = this.state;
 
         if (isLoading && selectedIndex !== -1) {
             return (
@@ -550,9 +541,12 @@ class ChatRoom extends Component {
             return Default;
         }
 
-        if (!_.get(selectedChat, 'ismember', false)) {
+        if (!_.get(selectedChat, 'ismember', false) && !this.props.latestJoined[_.get(selectedChat, 'id', '')]) {
             return NotMember;
         }
+
+        const chatId = _.get(this.props, 'selectedChat.id', '');
+        const chat = _.get(this.props, `chat[${chatId}]`, []);
 
         return (
             <ChatRoomStyle

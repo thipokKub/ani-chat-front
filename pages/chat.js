@@ -78,8 +78,6 @@ section.background {
 
 let callbackRedirect = null;
 
-const defaultUrl = 'http://localhost:3001';
-
 class Index extends Component {
     constructor(props) {
         super(props);
@@ -90,28 +88,9 @@ class Index extends Component {
             redirectedInterval: -1,
             selectedChatIndex: -1,
             isCreating: false,
-            socket: io(defaultUrl),
-            socketVersion: 0
-        }
-    }
-    onCreateSocket = (url) => {
-        this.onDisconnected(() => {
-            this.setState({
-                socket: io(url, { 'forceNew': true }),
-                socketVersion: this.state.socketVersion + 1
-            }, () => {
-                this.state.socket.on('connect_error', function (e) {
-                    this.state.socket.io.reconnection(false);
-                });
-            })
-        })
-    }
-    onDisconnected = (callback) => {
-        try {
-            this.state.socket.emit('disconnect', "Hi");
-            if(typeof callback === "function") callback();
-        } catch (e) {
-            console.error(e);
+            socket: io(_.get(props, 'des.location', '')),
+            socketVersion: 0,
+            latestJoined: {}
         }
     }
     onChangeSelectedIndex = (idx) => {
@@ -128,14 +107,25 @@ class Index extends Component {
             }
         }
     }
+    onClickJoined = (chatId) => {
+        this.setState({ latestJoined: {
+            ...this.state.latestJoined,
+            [chatId]: true
+        } })
+    }
+    onClickLeave = (chatId) => {
+        this.setState({
+            latestJoined: {
+                ...this.state.latestJoined,
+                [chatId]: false
+            }
+        })
+    }
     componentDidUpdate(prevProps, prevState) {
         if(typeof _.get(this.props, 'map.ChatStore.groupList.data', null) === "undefined" ||
             _.get(this.props, 'map.ChatStore.groupList.data', null) === null
         ) {
             this.onInit();
-        }
-        if (_.get(prevProps, 'des.location', '') !== _.get(this.props, 'des.location', '')) {
-            this.onCreateSocket(_.get(this.props, 'des.location', ''))
         }
 
     }
@@ -143,8 +133,8 @@ class Index extends Component {
         setTimeout(async () => {
             try {
                 const { userId } = this.props.map.UserStat;
-                const { location } = this.props.map.Page;
-                let response = await axios.get(`${location.data}/chat/all?id=${userId.data}`);
+                const { location } = this.props.des;
+                let response = await axios.get(`${location}/chat/all?id=${userId.data}`);
                 response = response.data;
                 this.props.updateMapId("ChatStore", "groupList", {
                     data: response
@@ -286,6 +276,8 @@ class Index extends Component {
                                     onCloseCreate={this.onCloseCreate}
                                     socket={this.state.socket}
                                     socketVersion={this.state.socketVersion}
+                                    onClickJoined={this.onClickJoined}
+                                    latestJoined={this.state.latestJoined}
                                 />
                             </MainSection>
                         </section>
@@ -303,6 +295,7 @@ class Index extends Component {
                                 socket={this.state.socket}
                                 socketVersion={this.state.socketVersion}
                                 oProps={this.props}
+                                onClickLeave={this.onClickLeave}
                             />
                             <MainSection
                                 offsetHeight={`${this.state.navHeight}px`}
@@ -324,6 +317,8 @@ class Index extends Component {
                                     socket={this.state.socket}
                                     socketVersion={this.state.socketVersion}
                                     propsFunc={propsFunc}
+                                    onClickJoined={this.onClickJoined}
+                                    latestJoined={this.state.latestJoined}
                                 />
                             </MainSection>
                         </section>

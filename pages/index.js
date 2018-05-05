@@ -7,7 +7,7 @@ import axios from 'axios';
 import _ from 'lodash';
 import io from 'socket.io-client';
 
-const socketUri = 'http://localhost:5000';
+const socketUri = 'http://192.168.1.119:5000';
 const socket = io(socketUri);
 let onUpdateDesination = () => {}
 
