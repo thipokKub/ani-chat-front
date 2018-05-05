@@ -148,6 +148,19 @@ class AppBar extends Component {
         }
     }
 
+    onRefresh = async () => {
+        try {
+            const { userId, url } = this.props.sharedStore;
+            let response = await axios.get(`${url}/chat/all?id=${userId.data}`);
+            response = response.data;
+            this.props.propsFunc.updateMapId("ChatStore", "groupList", {
+                data: response
+            });
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
     render() {
         const { text, icon, bgColor, color, isMain } = this.props;
         return (
@@ -156,6 +169,20 @@ class AppBar extends Component {
             }}>
                 <i className={icon} />
                 <h1>{text}</h1>
+                {
+                    !isMain && (
+                        <button
+                            onClick={this.onRefresh}
+                            title="Refresh"
+                            style={{
+                                position: 'absolute',
+                                right: '5px'
+                            }}
+                        >
+                            <i className="fa fa-refresh" />
+                        </button>
+                    )
+                }
                 {
                     isMain && (
                         <div className="right">

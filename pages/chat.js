@@ -258,6 +258,7 @@ class Index extends Component {
                                 ref={(nav) => this._nav = nav}
                                 isRendered={!isNoUserFound}
                                 sharedStore={sharedStore}
+                                propsFunc={propsFunc}
                             />
                             <MainSection
                                 offsetHeight={`${this.state.navHeight}px`}

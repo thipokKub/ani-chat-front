@@ -31,6 +31,10 @@ position: relative;
     display: flex;
     margin: 10px 20px;
 
+    &.unread {
+        background-color: rgba(255, 255, 255, 0.2);
+    }
+
     .Profile {
         display: flex;
         flex-direction: column;
@@ -212,10 +216,10 @@ input, textarea {
 
 const avatarImages = Array.from(new Array(4).keys()).map((idx) => `/static/resources/avatar/a-0${idx+1}.png`)
 
-const GenerateBubble = (isMe, item, idx) => {
+const GenerateBubble = (isMe, item, idx, isUnread = false) => {
     
     return (
-        <div className={`chatBox ${isMe ? 'right' : ''}`} key={idx}>
+        <div className={`chatBox ${isMe ? 'right' : ''} ${isUnread ? 'unread' : ''}`} key={idx}>
             {
                 (!isMe && (
                     <div className="Profile">
@@ -251,7 +255,8 @@ class ChatRoom extends Component {
         this.state = {
             width: -1,
             chat: [],
-            isLoading: false
+            isLoading: false,
+            markAsUnreads: []
         }
         
         props.socket.on('chat message', (a) => {
@@ -335,7 +340,10 @@ class ChatRoom extends Component {
                         groupId: _.get(this.props, 'selectedChat.id', ''),
                         userId: this.props.sharedStore.userId.data
                     })
-                    this.setState({ isLoading: false }, () => {
+                    this.setState({
+                        isLoading: false,
+                        markAsUnreads: response.data.unread
+                    }, () => {
                         const elem = $(".chatRoom")[0];
                         elem.scrollTop = elem.scrollHeight
                     })
@@ -403,7 +411,7 @@ class ChatRoom extends Component {
         if (prevChatId !== currChatId && currChatId.length > 0) {
             this.onFetchChat(_.get(this.props, 'selectedChat.id', ''))
             if (prevProps.selectedIndex !== this.props.selectedIndex) {
-                this.setState({ isLoading: true, chat: [] })
+                this.setState({ isLoading: true, chat: [], markAsUnreads: [] })
             }
         }
 
@@ -556,6 +564,11 @@ class ChatRoom extends Component {
             >
                 <div className="chat-list">
                     {chat.map((item, idx) => {
+                        if(_.get(this.state, 'markAsUnreads', []).reduce((acc, it) => {
+                            return acc || _.isEqual(item, it);
+                        }, false)) {
+                            return GenerateBubble(item.userName === _.get(this.props, "sharedStore.username.data", ""), item, idx, true)
+                        }
                         return GenerateBubble(item.userName === _.get(this.props, "sharedStore.username.data", ""), item, idx)
                     })}
                 </div>
