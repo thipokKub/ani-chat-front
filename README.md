@@ -4,9 +4,9 @@ Distributed System Class' mini project.
 For backend server, it is located [here](https://github.com/burin-n/anychat-server).
 
 ### Tested on
-    node 8.11.1
-    npm 5.6.0
-    yarn 1.6.0
+- node 8.11.1
+- npm 5.6.0
+- yarn 1.6.0
 
 ### Installation
 1. run backend
