@@ -107,6 +107,14 @@ class Index extends Component {
             }
         }
     }
+    onCreateSocket = () => {
+        this.state.socket.off();
+        this.state.socket.disconnect();
+        this.setState({
+            socket: io(_.get(this.props, 'des.location', '')),
+            socketVersion: this.state.socketVersion + 1
+        })
+    }
     onClickJoined = (chatId) => {
         this.setState({ latestJoined: {
             ...this.state.latestJoined,
@@ -126,6 +134,10 @@ class Index extends Component {
             _.get(this.props, 'map.ChatStore.groupList.data', null) === null
         ) {
             this.onInit();
+        }
+
+        if(_.get(this.props, 'des.location', '') !== _.get(prevProps, 'des.location', '')) {
+            this.onCreateSocket();
         }
 
     }
